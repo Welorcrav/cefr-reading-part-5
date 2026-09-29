@@ -86,19 +86,34 @@ function loadExercise(id) {
   const ex = exercisesData[id];
   if (!ex) return;
 
-  document.getElementById(`title-${id}`).innerText = ex.title1;
-  
-  // Matndagi har bir so'zni alohida span elementiga bo'lib chiqish (tarjima qilish uchun)
-  const passageContainer = document.getElementById(`passage-${id}`);
-  const words = ex.passage1.split(/\s+/);
-  passageContainer.innerHTML = words.map(word => `<span class="clickable-word" onclick="toggleWordSelection(this)">${word}</span>`).join(' ');
+  // Umumiy yagona ID lardan foydalanamiz
+  const titleEl = document.getElementById('exercise-title') || document.getElementById(`title-${id}`) || document.getElementById('title-1');
+  const passageEl = document.getElementById('exercise-passage') || document.getElementById(`passage-${id}`) || document.getElementById('passage-1');
+  const questionsEl = document.getElementById('exercise-questions') || document.getElementById(`questions-${id}`) || document.getElementById('questions-1');
 
-  document.getElementById(`questions-${id}`).innerHTML = ex.questions1;
+  if (titleEl) titleEl.innerText = ex.title1;
+  
+  if (passageEl) {
+    const words = ex.passage1.split(/\s+/);
+    passageEl.innerHTML = words.map(word => `<span class="clickable-word" onclick="toggleWordSelection(this)">${word}</span>`).join(' ');
+  }
+
+  if (questionsEl) {
+    questionsEl.innerHTML = ex.questions1;
+  }
+
+  // Natijalar oynasini tozalash va yashirish
+  const resultBox = document.getElementById('result-box');
+  if (resultBox) {
+    resultBox.style.display = 'none';
+    resultBox.innerHTML = '';
+  }
 
   // Tarjima qilish tugmasiga hodisa qo'shish
   setTimeout(() => {
     const translateBtn = document.getElementById('translate-btn');
     if (translateBtn) {
+      translateBtn.removeEventListener('click', handleTranslation);
       translateBtn.addEventListener('click', handleTranslation);
     }
   }, 100);
