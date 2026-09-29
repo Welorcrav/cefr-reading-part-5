@@ -34,6 +34,18 @@
             <div id="exercise-passage" class="passage">
                 Matn bu yerda chiqadi...
             </div>
+
+            <div class="translation-selection-actions">
+                 <button id="translate-selection" class="btn-secondary" type="button" disabled>Notanish so'zlarni belgilang</button>
+                 <button id="clear-selection" class="btn-secondary" type="button" disabled>Belgilarni tozalash</button>
+            </div>
+
+            <div id="translation-editor" class="translation-editor" hidden>
+                <label id="translation-label" for="translation-input">Tarjima</label>
+                <input id="translation-input" type="text" autocomplete="off" placeholder="O'zbekcha tarjimani yozing">
+                <button id="translation-save" class="btn-success" type="button">Saqlash</button>
+                <button id="translation-cancel" class="btn-secondary" type="button">Bekor qilish</button>
+            </div>
             
             <div id="exercise-questions" class="questions-section">
                 <!-- Savollar dinamik yuklanadi -->

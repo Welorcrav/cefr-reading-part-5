@@ -9,16 +9,16 @@ const exercisesData = {
         Although the Silk Road remained important for many centuries, its influence gradually declined after the development of powerful maritime trade routes. Ocean transport allowed merchants to move larger quantities of goods more quickly, more cheaply, and with fewer geographical obstacles than traditional overland caravans.`,
         questions1: `
             <div class="question-item">
-                <label>30. It was later studied by the <input type="text" data-ans="German"> scholar Ferdinand Von Richthofen...</label>
+                <label>30. It was later studied by the <input type="text" data-ans="German"> scholar Ferdinand von Richthofen, whose research brought international attention to the Silk Road.</label>
             </div>
             <div class="question-item">
-                <label>31. ...the Chinese government sent the <input type="text" data-ans="diplomat"> Zhang Qian...</label>
+                <label>31. The Chinese government sent the <input type="text" data-ans="diplomat"> Zhang Qian on a mission to learn about the regions west of China.</label>
             </div>
             <div class="question-item">
-                <label>32. ...the exchange of <input type="text" data-ans="technologies"> greatly influenced the development of Europe...</label>
+                <label>32. The exchange of <input type="text" data-ans="technologies"> greatly influenced Europe's development by helping knowledge spread more quickly.</label>
             </div>
             <div class="question-item">
-                <label>33. During the time of the Mongol <input type="text" data-ans="Empire">, the trade routes became much safer...</label>
+                <label>33. During the time of the Mongol <input type="text" data-ans="Empire">, merchants could travel the trade routes more safely under one political authority.</label>
             </div>
             
             <div class="question-item">
@@ -52,16 +52,16 @@ const exercisesData = {
         Overall, the search for life beyond Earth brings together astronomy, chemistry, and biology. By examining distant worlds and the conditions around other suns, scientists hope to discover whether life is rare or widespread in the universe — and whether Earth is truly unique.`,
         questions1: `
             <div class="question-item">
-                <label>30. Scientists look for <input type="text" data-ans="gases"> in the atmospheres of exoplanets...</label>
+                <label>30. Scientists look for <input type="text" data-ans="gases"> in exoplanet atmospheres to find clues about possible life.</label>
             </div>
             <div class="question-item">
-                <label>31. Proxima b is close to its <input type="text" data-ans="sun"> and is believed to have a rocky surface...</label>
+                <label>31. Proxima b is close to its <input type="text" data-ans="sun"> and is believed to have a solid, rocky surface.</label>
             </div>
             <div class="question-item">
-                <label>32. ...three of these planets may contain <input type="text" data-ans="water">.</label>
+                <label>32. Three of the TRAPPIST-1 planets may contain <input type="text" data-ans="water">, which is essential for life as we know it.</label>
             </div>
             <div class="question-item">
-                <label>33. ...alien life may depend on abnormal <input type="text" data-ans="chemicals"> in order to survive...</label>
+                <label>33. Some theories suggest that alien life may depend on unusual <input type="text" data-ans="chemicals"> to survive in extreme conditions.</label>
             </div>
 
             <div class="question-item">
@@ -94,10 +94,10 @@ const exercisesData = {
         Today, falconry is still practiced in many parts of the world, including Europe, Central Asia, and the Middle East. In countries like the UAE and Saudi Arabia, falconry is considered a national tradition and falcons are even given passports to travel with their owners.`,
         questions1: `
             <div class="question-item">
-                <label>30. One ancient practice involving falcons is called <input type="text" data-ans="falconry">...</label>
+                <label>30. One ancient practice involving falcons is called <input type="text" data-ans="falconry">, and it has been practised for thousands of years.</label>
             </div>
             <div class="question-item">
-                <label>31. The <input type="text" data-ans="peregrine"> falcon is particularly valued for its physical build...</label>
+                <label>31. The <input type="text" data-ans="peregrine"> falcon is the fastest animal on Earth and can dive at over 300 kilometres per hour.</label>
             </div>
             <div class="question-item">
                 <label>32. When kept in captivity, falcons occasionally consume <input type="text" data-ans="meat">.</label>
@@ -137,16 +137,16 @@ const exercisesData = {
         For this reason, some researchers argue that environmental progress should be measured across the entire industry rather than focusing on a limited number of companies. Without this broader perspective, it may be difficult to understand the real environmental impact of fashion production. Despite various initiatives aimed at reducing pollution, many experts remain cautious. They warn that even significant improvements within the fashion industry alone may not be enough to address the wider challenges connected with climate change.`,
         questions1: `
             <div class="question-item">
-                <label>30. Fashion companies often promote their materials as <input type="text" data-ans="sustainable"> in order to attract...</label>
+                <label>30. Fashion companies often promote their materials as <input type="text" data-ans="sustainable"> to attract consumers who want to make responsible purchasing decisions.</label>
             </div>
             <div class="question-item">
                 <label>31. Clothing production creates large amounts of carbon <input type="text" data-ans="emissions">.</label>
             </div>
             <div class="question-item">
-                <label>32. One report showed that total emissions in the fashion industry fell by about <input type="text" data-ans="5"> percent...</label>
+                <label>32. One report showed that total fashion-industry emissions fell by about <input type="text" data-ans="5"> percent in 2019, although the reduction was relatively small.</label>
             </div>
             <div class="question-item">
-                <label>33. Some experts believe that examining only individual <input type="text" data-ans="brands"> does not ensure a full picture...</label>
+                <label>33. Some experts believe that examining only individual <input type="text" data-ans="brands"> does not provide a full picture of the fashion industry's environmental impact.</label>
             </div>
 
             <div class="question-item">
@@ -184,13 +184,13 @@ const exercisesData = {
                 <label>30. Mind reading has always captured our fascination, from earliest seers to <input type="text" data-ans="magicians">.</label>
             </div>
             <div class="question-item">
-                <label>31. Present time, the study of mind reading involves various fields of <input type="text" data-ans="science">...</label>
+                <label>31. At present, the study of mind reading involves various fields of <input type="text" data-ans="science">, including psychology, neurobiology, and computer science.</label>
             </div>
             <div class="question-item">
                 <label>32. Researchers applying innovative methods can get <input type="text" data-ans="signals"> and patterns.</label>
             </div>
             <div class="question-item">
-                <label>33. ...it is still a complicated and <input type="text" data-ans="imperfect"> field of study.</label>
+                <label>33. Despite recent advances, mind reading is still a complicated and <input type="text" data-ans="imperfect"> field of study because the human mind is difficult to interpret.</label>
             </div>
 
             <div class="question-item">
@@ -224,16 +224,16 @@ const exercisesData = {
         Climate change poses a significant threat to lakes worldwide. Rising temperatures can lead to increased evaporation rates, reducing water levels and concentrating pollutants. Changes in precipitation patterns can affect the inflow and outflow of water, altering the hydrological balance of lakes. The impact of climate change on lakes is complex and varies by region, but the overall trend is one of increased stress on these vital ecosystems.`,
         questions1: `
             <div class="question-item">
-                <label>30. <input type="text" data-ans="Tectonic"> depressions created by tectonic movements eventually fill with water...</label>
+                <label>30. <input type="text" data-ans="Tectonic"> depressions created by movements of the Earth's crust eventually fill with water and form lakes.</label>
             </div>
             <div class="question-item">
-                <label>31. Lakes play an essential role in helping to <input type="text" data-ans="regulate"> water flow...</label>
+                <label>31. Lakes help to <input type="text" data-ans="regulate"> water flow, reducing the effects of floods and droughts.</label>
             </div>
             <div class="question-item">
-                <label>32. ...phytoplankton, utilise <input type="text" data-ans="sunlight"> to carry out photosynthesis...</label>
+                <label>32. Phytoplankton use <input type="text" data-ans="sunlight"> for photosynthesis and form the base of the lake food web.</label>
             </div>
             <div class="question-item">
-                <label>33. Increasing <input type="text" data-ans="evaporation"> rates due to rising temperatures can result in lower water levels...</label>
+                <label>33. Rising temperatures can increase <input type="text" data-ans="evaporation">, lowering lake water levels and concentrating pollutants.</label>
             </div>
 
             <div class="question-item">
@@ -310,7 +310,7 @@ const exercisesData = {
                 <label>30. Remote work has several problems on collaboration and <input type="text" data-ans="motivation"> related to mental health issues.</label>
             </div>
             <div class="question-item">
-                <label>31. Working from home depends on computer... which makes it hard to work together and cause <input type="text" data-ans="misunderstandings">.</label>
+                <label>31. Working from home depends on computer-based communication, which can make collaboration harder and lead to <input type="text" data-ans="misunderstandings">.</label>
             </div>
             <div class="question-item">
                 <label>32. Employees can save money, reducing the size and <input type="text" data-ans="maintenance"> of office space.</label>
@@ -350,16 +350,16 @@ const exercisesData = {
         Scientists study volcanoes in order to better understand their behavior and predict when eruptions might occur. They use instruments such as seismometers, gas sensors, and satellite imagery to monitor the activity of volcanoes and track changes in their behavior. This information can be used to create early warning systems that can help protect people and communities from the effects of volcanic eruptions.`,
         questions1: `
             <div class="question-item">
-                <label>30. Volcanic eruptions can result in the creation of new <input type="text" data-ans="land">, enriching the soil...</label>
+                <label>30. Volcanic eruptions can create new <input type="text" data-ans="land"> and enrich the soil with minerals and nutrients.</label>
             </div>
             <div class="question-item">
-                <label>31. Scientists utilize instruments like seismometers... to <input type="text" data-ans="monitor"> the activity of volcanoes...</label>
+                <label>31. Scientists use seismometers, gas sensors, and satellite imagery to <input type="text" data-ans="monitor"> volcanic activity and track changes.</label>
             </div>
             <div class="question-item">
-                <label>32. Pyroclastic flows... pose a significant threat due to their <input type="text" data-ans="deadly"> nature.</label>
+                <label>32. Pyroclastic flows are fast-moving clouds of hot gas, ash, and rock that pose a threat because of their <input type="text" data-ans="deadly"> nature.</label>
             </div>
             <div class="question-item">
-                <label>33. Shield volcanoes are formed by the repeated eruptions of <input type="text" data-ans="fluid"> lava flows...</label>
+                <label>33. Shield volcanoes form through repeated eruptions of <input type="text" data-ans="fluid"> lava flows that spread into wide, gently sloping shapes.</label>
             </div>
 
             <div class="question-item">
@@ -438,13 +438,13 @@ const exercisesData = {
                 <label>30. Happiness can come from both everyday moments and from reaching important <input type="text" data-ans="accomplishments">.</label>
             </div>
             <div class="question-item">
-                <label>31. Dopamine and serotonin are chemicals released in the <input type="text" data-ans="brain"> that help people feel pleasure...</label>
+                <label>31. Dopamine and serotonin are released in the <input type="text" data-ans="brain"> and help people feel pleasure, motivation, and reduced stress.</label>
             </div>
             <div class="question-item">
                 <label>32. Practicing <input type="text" data-ans="gratitude"> by appreciating life's good things often leads to greater satisfaction.</label>
             </div>
             <div class="question-item">
-                <label>33. People with close and caring <input type="text" data-ans="bonds"> usually enjoy better health, live longer...</label>
+                <label>33. People with close and caring <input type="text" data-ans="bonds"> usually enjoy better health, live longer, and report greater life satisfaction.</label>
             </div>
 
             <div class="question-item">
@@ -479,16 +479,16 @@ const exercisesData = {
         Taken together, the search for life beyond Earth brings astronomy, chemistry, and biology into a single shared effort. By carefully examining distant worlds and the conditions surrounding other stars, scientists hope eventually to answer one of humanity's oldest questions: whether life in the universe is rare, common, or something in between.`,
         questions1: `
             <div class="question-item">
-                <label>30. Scientists look for <input type="text" data-ans="biosignatures"> in the atmospheres of exoplanets...</label>
+                <label>30. Scientists look for <input type="text" data-ans="biosignatures"> in exoplanet atmospheres as possible signs of biological activity.</label>
             </div>
             <div class="question-item">
-                <label>31. Proxima b is close to its <input type="text" data-ans="sun">, and is believed to have a rocky surface...</label>
+                <label>31. Proxima b is close to its <input type="text" data-ans="sun"> and is believed to have a rocky surface rather than a gas-covered one.</label>
             </div>
             <div class="question-item">
                 <label>32. The TRAPPIST-1 system has seven Earth-sized planets, and three of them may contain <input type="text" data-ans="water">.</label>
             </div>
             <div class="question-item">
-                <label>33. ...alien life may depend on unusual <input type="text" data-ans="chemicals"> in order to survive...</label>
+                <label>33. Some theories suggest that alien life may depend on unusual <input type="text" data-ans="chemicals"> to survive in extreme environments.</label>
             </div>
 
             <div class="question-item">
@@ -525,10 +525,10 @@ const exercisesData = {
                 <label>30. <input type="text" data-ans="Opioids"> are medicines commonly prescribed to relieve moderate or severe pain.</label>
             </div>
             <div class="question-item">
-                <label>31. A <input type="text" data-ans="virus"> may affect specific organs, although its consequences can sometimes extend...</label>
+                <label>31. A <input type="text" data-ans="virus"> may affect specific organs, but its consequences can sometimes extend to other systems of the body.</label>
             </div>
             <div class="question-item">
-                <label>32. Dietary <input type="text" data-ans="fibers"> are naturally found in foods such as vegetables, fruits...</label>
+                <label>32. Dietary <input type="text" data-ans="fibers"> are found in vegetables, fruits, legumes, and whole grains, and support digestive health.</label>
             </div>
             <div class="question-item">
                 <label>33. <input type="text" data-ans="Psychiatric"> research has expanded considerably in recent decades.</label>

@@ -11,8 +11,9 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
+    padding: 7.5vh 0;
 }
 
 /* Umumiy konteyner (Ikki ustunli dizayn) */
@@ -20,11 +21,11 @@ body {
     display: flex;
     width: 95%;
     max-width: 1200px;
-    height: 85vh;
+    min-height: 85vh;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* Chap tomon - Sidebar (Mashqlar ro'yxati) */
@@ -68,10 +69,10 @@ body {
 .content-area {
     flex: 1;
     padding: 30px;
-    overflow-y: auto;
+    overflow: visible;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .content-area h2 {
@@ -89,8 +90,6 @@ body {
     font-size: 16px;
     line-height: 1.6;
     margin-bottom: 20px;
-    max-height: 250px;
-    overflow-y: auto;
 }
 
 /* Bosiladigan so'zlar effekti */
@@ -99,6 +98,91 @@ body {
     padding: 2px 4px;
     border-radius: 4px;
     transition: background 0.2s;
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+.word-translation {
+    display: block;
+    color: #c0392b;
+    font-size: 0.72em;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.translated-phrase {
+    cursor: pointer;
+    ruby-align: center;
+}
+
+.translated-phrase rt {
+    user-select: none;
+}
+
+.translation-selection-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: -10px 0 16px;
+}
+
+.translation-selection-actions button {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.translation-selection-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.question-phrase-translation {
+    cursor: pointer;
+}
+
+.translation-editor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -8px 0 18px;
+    padding: 12px;
+    background: #fff8f0;
+    border-left: 3px solid #c0392b;
+}
+
+.translation-editor[hidden] {
+    display: none;
+}
+
+.translation-editor label {
+    flex: 0 0 auto;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.translation-editor input {
+    flex: 1;
+    min-width: 120px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.translation-editor button {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .translation-editor {
+        flex-wrap: wrap;
+    }
+
+    .translation-editor input {
+        flex-basis: 100%;
+    }
 }
 
 .clickable-word:hover {
@@ -106,11 +190,25 @@ body {
     color: #2980b9;
 }
 
+.clickable-word.is-selected {
+    background-color: #ffe08a;
+    color: #5c3900;
+    outline: 1px solid #d49b21;
+}
+
+.clickable-word.is-marked {
+    background-color: #fff1ed;
+    text-decoration: underline;
+    text-decoration-color: #c0392b;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
 /* Savollar qismi */
 .questions-section {
     margin-bottom: 20px;
-    flex: 1;
-    overflow-y: auto;
+    flex: 0 0 auto;
+    overflow: visible;
 }
 
 .question-item {
@@ -121,21 +219,22 @@ body {
     border-radius: 6px;
 }
 
+/* Matn va input joylashuvi to'g'rilandi */
 .question-item label {
     font-size: 15px;
     color: #4a5568;
-    display: flex;
-    flex-wrap: wrap; /* Joy yetmaganda pastga tushishini ta'minlaydi */
-    align-items: center;
-    gap: 5px; /* So'zlar va input orasidagi masofa */
+}
+
+.question-item label:not(.option-label) {
+    display: inline;
 }
 
 .question-item input[type="text"] {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #cbd5e0;
     border-radius: 4px;
     font-size: 14px;
-    width: 200px;
+    width: 160px;
     outline: none;
     transition: border-color 0.2s;
 }
@@ -195,24 +294,26 @@ button:active {
     text-align: center;
 }
 
-/* Variantlar bir ustunda, radio tugma esa matnning CHAP tomonida va bir chiziqda turishi uchun */
+/* Variantlar bir ustunda, radio tugma esa matnning CHAP tomonida */
 .options-group {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Variantlar orasidagi masofa */
-    margin-top: 8px;
+    gap: 8px; 
+    margin-top: 10px;
 }
 
 .option-row {
     display: flex;
-    align-items: center; /* Radio tugma va matnni vertikal bir chiziqqa keltiradi */
+    align-items: center; 
     width: 100%;
 }
 
 .option-label {
     display: flex;
+    flex-wrap: wrap;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px; /* Radio tugma va A) B) matni orasidagi masofa */
+    gap: 8px; 
     cursor: pointer;
     font-size: 14px;
     color: #4a5568;
