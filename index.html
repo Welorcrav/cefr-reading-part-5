@@ -4,63 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CEFR Reading Part 5 Practice</title>
+  
+  <!-- Firebase SDK lari -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Chap tomondagi Yon Menyu (Sidebar) -->
-  <aside class="sidebar">
-    <div class="sidebar-title">Mashqlar</div>
-    <ul class="exercise-list">
-      <li class="active" onclick="loadExercise(1)">1. Silk Road</li>
-      <li onclick="loadExercise(2)">2. Life Beyond Earth</li>
-      <li onclick="loadExercise(3)">3. Falcons</li>
-      <li onclick="loadExercise(4)">4. Fashion Impact</li>
-      <li onclick="loadExercise(5)">5. Mind Reading</li>
-      <li onclick="loadExercise(6)">6. Lakes</li>
-      <li onclick="loadExercise(7)">7. Urban Transport</li>
-      <li onclick="loadExercise(8)">8. Remote Work</li>
-      <li onclick="loadExercise(9)">9. Volcanoes</li>
-      <li onclick="loadExercise(10)">10. Butterfly Decline</li>
-      <li onclick="loadExercise(11)">11. Science of Happiness</li>
-      <li onclick="loadExercise(12)">12. Alien Life</li>
-      <li onclick="loadExercise(13)">13. Modern Medicine</li>
-    </ul>
-  </aside>
+  <!-- AUTHENTICATION CONTAINER -->
+  <div id="auth-container" class="auth-wrapper" style="display: none;">
+    <div class="auth-box">
+      <h2 id="auth-title">Tizimga kirish</h2>
+      <form id="auth-form">
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" id="auth-email" required placeholder="Emailingizni kiriting">
+        </div>
+        <div class="form-group">
+          <label>Parol:</label>
+          <input type="password" id="auth-password" required placeholder="Parolingizni kiriting">
+        </div>
+        <button type="submit" id="auth-submit-btn" class="btn-primary">Kirish</button>
+      </form>
 
-  <div class="container">
-    <h1>CEFR Reading Part 5 Practice</h1>
+      <!-- Google orqali kirish -->
+      <div class="auth-divider">yoki</div>
+      <button id="google-login-btn" class="btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" width="18">
+        Google orqali kirish
+      </button>
 
-    <!-- Bulut sinxronizatsiyasi (Firebase) -->
-    <div id="sync-bar" class="sync-bar"></div>
-    
-    <div class="instructions">
-      💡 <strong>Yo'riqnoma:</strong> Matndagi <u>har qanday so'z ustiga bosing</u> va tarjimasini yozing. So'z tagiga chiziladi va tepasida tarjimasi paydo bo'ladi. Mashq oxirida <strong>"Javoblarni tekshirish"</strong> tugmasini bosing.
+      <p class="auth-switch">
+        <span id="auth-toggle-text">Hisobingiz yo'qmi?</span> 
+        <a href="#" id="auth-toggle-link">Ro'yxatdan o'tish</a>
+      </p>
     </div>
-
-    <!-- MAIN EXERCISE CONTENT AREA -->
-    <div class="test-card" id="part-5-section">
-      <div class="section-badge">Part 5</div>
-      <div class="test-title" id="title-1"></div>
-      <div class="passage" id="passage-1"></div>
-      <div class="questions-section" id="questions-1"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn-submit" id="check-btn">Javoblarni tekshirish</button>
-      <button class="btn-reset" id="reset-btn" type="button">↺ Bu mashqni qayta boshlash</button>
-    </div>
-    <div id="result-box" class="result-box"></div>
   </div>
 
-  <!-- Firebase (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- MAIN APP CONTAINER -->
+  <div id="main-app-container" style="display: none;">
+    <header class="app-header">
+      <div class="header-content">
+        <h1>CEFR Reading Part 5 Practice</h1>
+        <button id="logout-btn" class="btn-danger">Chiqish (Log out)</button>
+      </div>
+    </header>
 
-  <script src="firebase-config.js"></script>
+    <div class="container">
+      <div class="instructions">
+        💡 <strong>Yo'riqnoma:</strong> Matndagi so'zlarga ketma-ket bosing, so'ngra <strong>"Tarjima qilish ✍️"</strong> tugmasini bosib tarjimasini kiriting. Mashq oxirida <strong>"Javoblarni tekshirish"</strong> tugmasini bosing.
+      </div>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <h3>Mashqlar</h3>
+          <ul class="exercise-list">
+            <li onclick="loadExercise(1)">1. The Legacy Of The Silk Road</li>
+          </ul>
+        </aside>
+
+        <main class="content-area">
+          <h2 id="title-1"></h2>
+          <div id="passage-1" class="passage"></div>
+          
+          <div id="questions-1" class="questions-section"></div>
+
+          <div class="action-buttons">
+            <button id="check-btn" class="btn-success">Javoblarni tekshirish</button>
+            <button id="reset-btn" class="btn-secondary">Qaytadan boshlash</button>
+          </div>
+
+          <div id="result-box" class="result-box" style="display: none;"></div>
+        </main>
+      </div>
+    </div>
+  </div>
+
   <script src="exercises.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="script.js"></script>
-  <script src="sync.js"></script>
 </body>
 </html>
