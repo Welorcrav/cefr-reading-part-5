@@ -59,27 +59,40 @@
       </div>
 
       <div class="layout">
-        <aside class="sidebar">
-          <h3>Mashqlar</h3>
-          <ul class="exercise-list">
-            <li onclick="loadExercise(1)">1. The Legacy Of The Silk Road</li>
-          </ul>
-        </aside>
+  <aside class="sidebar">
+    <h3>Mashqlar</h3>
+    <ul class="exercise-list">
+      <li onclick="loadExercise(1)">1. The Legacy Of The Silk Road</li>
+      <li onclick="loadExercise(2)">2. Searching For Life Beyond Earth</li>
+      <li onclick="loadExercise(3)">3. Falcons</li>
+      <li onclick="loadExercise(4)">4. Environmental Impact Of Fashion</li>
+      <li onclick="loadExercise(5)">5. Mind Reading</li>
+      <li onclick="loadExercise(6)">6. Lakes</li>
+      <li onclick="loadExercise(7)">7. Urban Transportation</li>
+      <li onclick="loadExercise(8)">8. Remote Work</li>
+      <li onclick="loadExercise(9)">9. Volcanoes</li>
+      <li onclick="loadExercise(10)">10. The Decline Of Butterfly Populations</li>
+      <li onclick="loadExercise(11)">11. The Science Of Happiness</li>
+      <li onclick="loadExercise(12)">12. Alien Life</li>
+      <li onclick="loadExercise(13)">13. The Hidden Effects Of Modern Medicine</li>
+    </ul>
+  </aside>
 
-        <main class="content-area">
-          <h2 id="title-1"></h2>
-          <div id="passage-1" class="passage"></div>
-          
-          <div id="questions-1" class="questions-section"></div>
+  <main class="content-area">
+    <!-- E'tibor bering: ID larni dinamik qilish qulayroq bo'lishi uchun ularni umumiy bitta konteynerga o'tkazamiz -->
+    <h2 id="exercise-title"></h2>
+    <div id="exercise-passage" class="passage"></div>
+    
+    <div id="exercise-questions" class="questions-section"></div>
 
-          <div class="action-buttons">
-            <button id="check-btn" class="btn-success">Javoblarni tekshirish</button>
-            <button id="reset-btn" class="btn-secondary">Qaytadan boshlash</button>
-          </div>
+    <div class="action-buttons">
+      <button id="check-btn" class="btn-success">Javoblarni tekshirish</button>
+      <button id="reset-btn" class="btn-secondary">Qaytadan boshlash</button>
+    </div>
 
-          <div id="result-box" class="result-box" style="display: none;"></div>
-        </main>
-      </div>
+    <div id="result-box" class="result-box" style="display: none;"></div>
+  </main>
+</div>
     </div>
   </div>
 
