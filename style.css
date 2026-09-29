@@ -10,10 +10,51 @@ body {
     background-color: #f4f7f6;
     color: #333;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
     min-height: 100vh;
     padding: 7.5vh 0;
+    gap: 14px;
+}
+
+.sync-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 95%;
+    max-width: 1200px;
+    min-height: 48px;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid #dce3e8;
+    border-radius: 6px;
+    color: #34495e;
+    font-size: 14px;
+}
+
+.sync-bar button {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    background: #2c7a69;
+    color: #fff;
+    font-size: 14px;
+}
+
+.sync-bar button:hover {
+    background: #236455;
+}
+
+.sync-status {
+    margin-left: 8px;
+    color: #58706b;
+}
+
+@media (max-width: 640px) {
+    .sync-bar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
 
 /* Umumiy konteyner (Ikki ustunli dizayn) */

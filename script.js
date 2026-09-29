@@ -107,6 +107,7 @@ function saveWordTranslation() {
         alert("Tarjimani saqlab bo'lmadi.");
         return;
     }
+    if (window.Cloud) window.Cloud.saveTranslations(translations);
 
     if (target.type === 'phrase') {
         if (target.scope === 'p') {
@@ -398,6 +399,27 @@ function checkAnswers() {
 function resetExercise() {
     loadExercise(currentExerciseId);
 }
+
+window.addEventListener('translations-updated', () => {
+    if (!document.querySelector('#exercise-questions .question-item')) return;
+
+    const textAnswers = Array.from(document.querySelectorAll('#exercise-questions input[type="text"]'))
+        .map(input => input.value);
+    const radioAnswers = Array.from(document.querySelectorAll('#exercise-questions input[type="radio"]'))
+        .map(input => input.checked);
+
+    closeWordTranslation();
+    clearAllSelections();
+    renderPassage(currentExerciseId, passageElement);
+    questionsElement.innerHTML = exercisesData[currentExerciseId].questions1 || '';
+    prepareQuestionTranslations(currentExerciseId, questionsElement);
+    document.querySelectorAll('#exercise-questions input[type="text"]').forEach((input, index) => {
+        input.value = textAnswers[index] || '';
+    });
+    document.querySelectorAll('#exercise-questions input[type="radio"]').forEach((input, index) => {
+        input.checked = !!radioAnswers[index];
+    });
+});
 
 function prepareQuestionTranslations(id, questionsEl) {
     const translations = getWordTranslations();
