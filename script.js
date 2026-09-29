@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
     logoutBtn.addEventListener('click', () => auth.signOut());
   }
 
-  // Mashqni yuklash
+  // Boshlang'ich mashqni yuklash
   loadExercise(currentExerciseId);
 
   // Javoblarni tekshirish tugmasi
@@ -80,16 +80,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-// Mashqni yuklash va so'zlarni bosiladigan qilish
+// Mashqni yuklash va so'zlarni bosiladigan qilish (Eski stil - to'g'ridan-to'g'ri ID orqali)
 function loadExercise(id) {
   currentExerciseId = id;
   const ex = exercisesData[id];
   if (!ex) return;
 
-  // Umumiy yagona ID lardan foydalanamiz
-  const titleEl = document.getElementById('exercise-title') || document.getElementById(`title-${id}`) || document.getElementById('title-1');
-  const passageEl = document.getElementById('exercise-passage') || document.getElementById(`passage-${id}`) || document.getElementById('passage-1');
-  const questionsEl = document.getElementById('exercise-questions') || document.getElementById(`questions-${id}`) || document.getElementById('questions-1');
+  const titleEl = document.getElementById(`title-${id}`);
+  const passageEl = document.getElementById(`passage-${id}`);
+  const questionsEl = document.getElementById(`questions-${id}`);
 
   if (titleEl) titleEl.innerText = ex.title1;
   
@@ -102,14 +101,14 @@ function loadExercise(id) {
     questionsEl.innerHTML = ex.questions1;
   }
 
-  // Natijalar oynasini tozalash va yashirish
+  // Natija oynasini yashirish
   const resultBox = document.getElementById('result-box');
   if (resultBox) {
     resultBox.style.display = 'none';
     resultBox.innerHTML = '';
   }
 
-  // Tarjima qilish tugmasiga hodisa qo'shish
+  // Tarjima qilish tugmasiga hodisa ulash
   setTimeout(() => {
     const translateBtn = document.getElementById('translate-btn');
     if (translateBtn) {
@@ -119,7 +118,7 @@ function loadExercise(id) {
   }, 100);
 }
 
-// So'zni tanlash/bekor qilish
+// So'zni tanlash / bekor qilish (Ko'k rangga o'tish va tanlash)
 function toggleWordSelection(element) {
   element.classList.toggle('selected');
   const word = element.innerText;
@@ -142,7 +141,9 @@ function handleTranslation() {
   
   if (translation) {
     const resBox = document.getElementById('translation-result');
-    resBox.innerHTML += `<div>📌 <b>${phrase}</b> — ${translation}</div>`;
+    if (resBox) {
+      resBox.innerHTML += `<div>📌 <b>${phrase}</b> — ${translation}</div>`;
+    }
     selectedWordsForGrouping = [];
     document.querySelectorAll('.clickable-word.selected').forEach(el => el.classList.remove('selected'));
   }
@@ -158,8 +159,10 @@ function checkAnswers() {
   if (q31.includes('han')) score++;
 
   const resultBox = document.getElementById('result-box');
-  resultBox.style.display = 'block';
-  resultBox.innerHTML = `Natijangiz: <b>${score} ta</b> to'g'ri topildi.`;
+  if (resultBox) {
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `Natijangiz: <b>${score} ta</b> to'g'ri topildi.`;
+  }
 }
 
 // Qaytadan boshlash
@@ -168,8 +171,12 @@ function resetExercise() {
     const input = document.getElementById(id);
     if (input) input.value = '';
   });
-  document.getElementById('result-box').style.display = 'none';
-  document.getElementById('translation-result').innerHTML = '';
+  const resultBox = document.getElementById('result-box');
+  if (resultBox) resultBox.style.display = 'none';
+  
+  const transRes = document.getElementById('translation-result');
+  if (transRes) transRes.innerHTML = '';
+  
   selectedWordsForGrouping = [];
   document.querySelectorAll('.clickable-word.selected').forEach(el => el.classList.remove('selected'));
 }
