@@ -195,13 +195,30 @@ button:active {
     text-align: center;
 }
 
+/* Variantlar bir ustunda, radio tugma esa matnning CHAP tomonida va bir chiziqda turishi uchun */
 .options-group {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Variantlar orasidagi masofa uchun */
+    gap: 8px; /* Variantlar orasidagi masofa */
+    margin-top: 8px;
 }
 
 .option-row {
-    display: block;
+    display: flex;
+    align-items: center; /* Radio tugma va matnni vertikal bir chiziqqa keltiradi */
     width: 100%;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Radio tugma va A) B) matni orasidagi masofa */
+    cursor: pointer;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.option-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
 }
