@@ -125,9 +125,9 @@ body {
     font-size: 15px;
     color: #4a5568;
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap; /* Joy yetmaganda pastga tushishini ta'minlaydi */
     align-items: center;
-    gap: 10px;
+    gap: 2px; /* So'zlar va input orasidagi masofa */
 }
 
 .question-item input[type="text"] {
