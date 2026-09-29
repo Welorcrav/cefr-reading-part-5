@@ -1,189 +1,94 @@
-const INPUT_IDS = ['q30', 'q31', 'q32', 'q33'];
 let currentExerciseId = 1;
-let currentUserId = null;
-let appState = { exercises: {} };
-let selectedWordsForGrouping = [];
-let isSignUpMode = false;
 
-document.addEventListener('DOMContentLoaded', function () {
-  // 1. Firebase Authentication holatini kuzatish
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      currentUserId = user.uid;
-      document.getElementById('auth-container').style.display = 'none';
-      document.getElementById('main-app-container').style.display = 'block';
-      loadUserDataFromCloud(currentUserId);
-    } else {
-      currentUserId = null;
-      document.getElementById('auth-container').style.display = 'flex';
-      document.getElementById('main-app-container').style.display = 'none';
+// Sahifa yuklanganda avtomatik 1-mashqni ochish
+window.onload = function() {
+    if (typeof exercisesData !== 'undefined' && exercisesData[1]) {
+        loadExercise(1);
     }
-  });
+};
 
-  // 2. Google orqali kirish
-  const googleBtn = document.getElementById('google-login-btn');
-  if (googleBtn) {
-    googleBtn.addEventListener('click', function() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch((error) => alert("Xatolik: " + error.message));
-    });
-  }
-
-  // 3. Email va parol orqali kirish / ro'yxatdan o'tish
-  const authForm = document.getElementById('auth-form');
-  if (authForm) {
-    authForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const email = document.getElementById('auth-email').value;
-      const password = document.getElementById('auth-password').value;
-
-      if (isSignUpMode) {
-        auth.createUserWithEmailAndPassword(email, password).catch(error => alert("Xatolik: " + error.message));
-      } else {
-        auth.signInWithEmailAndPassword(email, password).catch(error => alert("Xatolik: " + error.message));
-      }
-    });
-  }
-
-  // 4. Rejimni almashtirish (Kirish / Ro'yxatdan o'tish)
-  const authToggleLink = document.getElementById('auth-toggle-link');
-  if (authToggleLink) {
-    authToggleLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      isSignUpMode = !isSignUpMode;
-      document.getElementById('auth-title').innerText = isSignUpMode ? "Ro'yxatdan o'tish" : "Tizimga kirish";
-      document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Ro'yxatdan o'tish" : "Kirish";
-      document.getElementById('auth-toggle-text').innerText = isSignUpMode ? "Hisobingiz bormi?" : "Hisobingiz yo'qmi?";
-      authToggleLink.innerText = isSignUpMode ? "Kirish" : "Ro'yxatdan o'tish";
-    });
-  }
-
-  // 5. Chiqish (Log out)
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => auth.signOut());
-  }
-
-  // Boshlang'ich mashqni yuklash
-  loadExercise(currentExerciseId);
-
-  // Javoblarni tekshirish tugmasi
-  const checkBtn = document.getElementById('check-btn');
-  if (checkBtn) {
-    checkBtn.addEventListener('click', checkAnswers);
-  }
-
-  // Qaytadan boshlash tugmasi
-  const resetBtn = document.getElementById('reset-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', resetExercise);
-  }
-});
-
-// Mashqni yuklash va so'zlarni bosiladigan qilish (Eski stil - to'g'ridan-to'g'ri ID orqali)
+// Mashqni yuklash funksiyasi
 function loadExercise(id) {
-  currentExerciseId = id;
-  const ex = exercisesData[id];
-  if (!ex) return;
+    currentExerciseId = id;
+    const ex = exercisesData[id];
+    if (!ex) return;
 
-  const titleEl = document.getElementById(`title-${id}`);
-  const passageEl = document.getElementById(`passage-${id}`);
-  const questionsEl = document.getElementById(`questions-${id}`);
+    const titleEl = document.getElementById('exercise-title');
+    const passageEl = document.getElementById('exercise-passage');
+    const questionsEl = document.getElementById('exercise-questions');
 
-  if (titleEl) titleEl.innerText = ex.title1;
-  
-  if (passageEl) {
-    const words = ex.passage1.split(/\s+/);
-    passageEl.innerHTML = words.map(word => `<span class="clickable-word" onclick="toggleWordSelection(this)">${word}</span>`).join(' ');
-  }
-
-  if (questionsEl) {
-    questionsEl.innerHTML = ex.questions1;
-  }
-
-  // Natija oynasini yashirish
-  const resultBox = document.getElementById('result-box');
-  if (resultBox) {
-    resultBox.style.display = 'none';
-    resultBox.innerHTML = '';
-  }
-
-  // Tarjima qilish tugmasiga hodisa ulash
-  setTimeout(() => {
-    const translateBtn = document.getElementById('translate-btn');
-    if (translateBtn) {
-      translateBtn.removeEventListener('click', handleTranslation);
-      translateBtn.addEventListener('click', handleTranslation);
+    if (titleEl) {
+        titleEl.innerText = ex.title1 || `Mashq ${id}`;
     }
-  }, 100);
-}
-
-// So'zni tanlash / bekor qilish (Ko'k rangga o'tish va tanlash)
-function toggleWordSelection(element) {
-  element.classList.toggle('selected');
-  const word = element.innerText;
-  
-  if (element.classList.contains('selected')) {
-    selectedWordsForGrouping.push(word);
-  } else {
-    selectedWordsForGrouping = selectedWordsForGrouping.filter(w => w !== word);
-  }
-}
-
-// Tanlangan so'zlarni tarjima qilish
-function handleTranslation() {
-  if (selectedWordsForGrouping.length === 0) {
-    alert("Iltimos, matndan kamida bitta so'zni tanlang!");
-    return;
-  }
-  const phrase = selectedWordsForGrouping.join(' ');
-  const translation = prompt(`"${phrase}" birikmasining tarjimasini kiriting:`);
-  
-  if (translation) {
-    const resBox = document.getElementById('translation-result');
-    if (resBox) {
-      resBox.innerHTML += `<div>📌 <b>${phrase}</b> — ${translation}</div>`;
+    
+    if (passageEl) {
+        // Matndagi so'zlarni alohida spanlarga bo'lish
+        const words = ex.passage1.split(/\s+/);
+        passageEl.innerHTML = words.map(word => `<span class="clickable-word">${word}</span>`).join(' ');
     }
-    selectedWordsForGrouping = [];
-    document.querySelectorAll('.clickable-word.selected').forEach(el => el.classList.remove('selected'));
-  }
+
+    if (questionsEl) {
+        questionsEl.innerHTML = ex.questions1 || '';
+    }
+
+    // Natija oynasini tozalash va yashirish
+    const resultBox = document.getElementById('result-box');
+    if (resultBox) {
+        resultBox.style.display = 'none';
+        resultBox.innerHTML = '';
+    }
 }
 
-// Javoblarni tekshirish
+// Javoblarni tekshirish funksiyasi
 function checkAnswers() {
-  const q30 = document.getElementById('q30')?.value.trim().toLowerCase() || "";
-  const q31 = document.getElementById('q31')?.value.trim().toLowerCase() || "";
-  
-  let score = 0;
-  if (q30.includes('ferdinand') || q30.includes('richthofen')) score++;
-  if (q31.includes('han')) score++;
+    const ex = exercisesData[currentExerciseId];
+    if (!ex) return;
 
-  const resultBox = document.getElementById('result-box');
-  if (resultBox) {
-    resultBox.style.display = 'block';
-    resultBox.innerHTML = `Natijangiz: <b>${score} ta</b> to'g'ri topildi.`;
-  }
+    let score = 0;
+    let total = 0;
+
+    // 1. Matnli input maydonlarini tekshirish
+    const inputs = document.querySelectorAll('.questions-section input[type="text"]');
+    inputs.forEach(input => {
+        total++;
+        const userAnswer = input.value.trim().toLowerCase();
+        const correctAnswer = (input.getAttribute('data-ans') || '').trim().toLowerCase();
+
+        if (userAnswer !== "" && correctAnswer.includes(userAnswer)) {
+            score++;
+            input.style.borderColor = 'green';
+            input.style.backgroundColor = '#e8f5e9';
+        } else {
+            input.style.borderColor = 'red';
+            input.style.backgroundColor = '#ffebee';
+        }
+    });
+
+    // 2. Test (radio button) savollarini tekshirish
+    const radioGroups = document.querySelectorAll('.options-group');
+    radioGroups.forEach(group => {
+        total++;
+        const qName = group.getAttribute('data-q');
+        const correctAns = group.getAttribute('data-ans');
+        const selected = document.querySelector(`input[name="${qName}"]:checked`);
+
+        if (selected && selected.value === correctAns) {
+            score++;
+            group.style.color = 'green';
+        } else {
+            group.style.color = 'red';
+        }
+    });
+
+    // Natijani ekranga chiqarish
+    const resultBox = document.getElementById('result-box');
+    if (resultBox) {
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `Sizning natijangiz: <b>${score}</b> / ${total} ta to'g'ri.`;
+    }
 }
 
-// Qaytadan boshlash
+// Qaytadan boshlash funksiyasi
 function resetExercise() {
-  INPUT_IDS.forEach(id => {
-    const input = document.getElementById(id);
-    if (input) input.value = '';
-  });
-  const resultBox = document.getElementById('result-box');
-  if (resultBox) resultBox.style.display = 'none';
-  
-  const transRes = document.getElementById('translation-result');
-  if (transRes) transRes.innerHTML = '';
-  
-  selectedWordsForGrouping = [];
-  document.querySelectorAll('.clickable-word.selected').forEach(el => el.classList.remove('selected'));
-}
-
-// Bulutdan yuklash
-function loadUserDataFromCloud(userId) {
-  db.collection("users").doc(userId).get().then((doc) => {
-    if (doc.exists) appState = doc.data();
-  });
+    loadExercise(currentExerciseId);
 }

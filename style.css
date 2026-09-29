@@ -1,284 +1,196 @@
-/* Umumiy sozlamalar */
+/* Asosiy sahifa sozlamalari */
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-  background-color: #f4f7f6;
-  color: #333;
-  line-height: 1.6;
+    background-color: #f4f7f6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-/* Header qismi */
-.app-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 15px 30px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+/* Umumiy konteyner (Ikki ustunli dizayn) */
+.app-container {
+    display: flex;
+    width: 95%;
+    max-width: 1200px;
+    height: 85vh;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 }
 
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.app-header h1 {
-  font-size: 22px;
-  color: #1a73e8;
-}
-
-/* Asosiy konteyner va Layout (Yonma-yon turishi uchun) */
-.container {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 20px;
-}
-
-.instructions {
-  background: #e8f0fe;
-  color: #1967d2;
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.layout {
-  display: flex;
-  gap: 25px;
-  align-items: flex-start;
-}
-
-/* Sidebar (Chapdagi menyu) */
+/* Chap tomon - Sidebar (Mashqlar ro'yxati) */
 .sidebar {
-  width: 280px;
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  flex-shrink: 0;
+    width: 280px;
+    background-color: #2c3e50;
+    color: #ffffff;
+    padding: 20px;
+    overflow-y: auto;
+    border-right: 1px solid #e0e0e0;
 }
 
-.sidebar h3 {
-  font-size: 16px;
-  margin-bottom: 15px;
-  color: #333;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 8px;
+.sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #34495e;
+    text-align: center;
 }
 
-.exercise-list {
-  list-style: none;
+.sidebar ul {
+    list-style: none;
 }
 
-.exercise-list li {
-  padding: 10px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-size: 14px;
-  color: #555;
+.sidebar ul li {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background-color: #34495e;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    font-size: 15px;
 }
 
-.exercise-list li:hover {
-  background-color: #f1f3f4;
-  color: #1a73e8;
+.sidebar ul li:hover {
+    background-color: #1abc9c;
+    transform: translateX(4px);
 }
 
-/* Content Area (O'ngdagi matn va savollar qismi) */
+/* O'ng tomon - Asosiy kontent qismi */
 .content-area {
-  flex-grow: 1;
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .content-area h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #202124;
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 15px;
 }
 
+/* Matn qismi (Passage) */
 .passage {
-  font-size: 15px;
-  color: #444;
-  line-height: 1.8;
-  margin-bottom: 25px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-height: 250px;
+    overflow-y: auto;
 }
 
-.questions-section {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-/* Tugmalar dizayni */
-.action-buttons {
-  display: flex;
-  gap: 15px;
-  margin-top: 25px;
-}
-
-.btn-success, .btn-secondary, .btn-danger {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-  transition: opacity 0.2s;
-}
-
-.btn-success { background-color: #34a853; color: white; }
-.btn-secondary { background-color: #f1f3f4; color: #555; }
-.btn-danger { background-color: #ea4335; color: white; }
-
-.btn-success:hover, .btn-secondary:hover, .btn-danger:hover {
-  opacity: 0.9;
-}
-
-/* Kirish oynasi (Auth) dizayni */
-.auth-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  width: 100%;
-  background-color: #f4f6f8;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
-
-.auth-box {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 400px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: #555;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 10px;
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.auth-divider {
-  text-align: center;
-  margin: 15px 0;
-  color: #888;
-  font-size: 14px;
-}
-
-.btn-google {
-  width: 100%;
-  padding: 10px;
-  background-color: #ffffff;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: background-color 0.2s;
-  margin-bottom: 15px;
-}
-
-.btn-google:hover {
-  background-color: #f8f9fa;
-}
-
-.auth-switch {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
-  color: #666;
-}
-
-.auth-switch a {
-  color: #1a73e8;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* Matndagi bosiladigan so'zlar dizayni */
+/* Bosiladigan so'zlar effekti */
 .clickable-word {
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
 }
 
 .clickable-word:hover {
-  background-color: #e8f0fe;
-  color: #1a73e8;
+    background-color: #e2e8f0;
+    color: #2980b9;
 }
 
-.clickable-word.selected {
-  background-color: #1a73e8;
-  color: white;
+/* Savollar qismi */
+.questions-section {
+    margin-bottom: 20px;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .question-item {
-  background: #f9fbfb;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
 }
 
-.answer-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  margin-top: 5px;
-  font-size: 14px;
+.question-item label {
+    font-size: 15px;
+    color: #4a5568;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
+.question-item input[type="text"] {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.question-item input[type="text"]:focus {
+    border-color: #3498db;
+}
+
+/* Tugmalar joylashuvi */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.btn-success {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+/* Natija oynasi */
 .result-box {
-  margin-top: 20px;
-  padding: 15px;
-  background: #e6f4ea;
-  color: #137333;
-  border-radius: 8px;
-  font-size: 15px;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background-color: #e8f8f5;
+    border: 1px solid #a3e4d7;
+    color: #117a65;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: center;
 }
