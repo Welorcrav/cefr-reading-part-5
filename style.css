@@ -127,7 +127,7 @@ body {
     display: flex;
     flex-wrap: wrap; /* Joy yetmaganda pastga tushishini ta'minlaydi */
     align-items: center;
-    gap: 2px; /* So'zlar va input orasidagi masofa */
+    gap: 5px; /* So'zlar va input orasidagi masofa */
 }
 
 .question-item input[type="text"] {
