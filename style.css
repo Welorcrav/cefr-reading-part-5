@@ -1,391 +1,150 @@
-:root {
-  --primary: #2563eb;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #1e293b;
-  --sidebar-bg: #1e293b;
-  --sidebar-hover: #334155;
-}
-
+/* Umumiy sozlamalar */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--bg);
-  color: var(--text);
-  line-height: 1.8;
-  margin: 0;
-  padding: 0;
+  background-color: #f4f7f6;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Header qismi */
+.app-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 15px 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
-  min-height: 100vh;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* SIDEBAR STYLES */
+.app-header h1 {
+  font-size: 22px;
+  color: #1a73e8;
+}
+
+/* Asosiy konteyner va Layout (Yonma-yon turishi uchun) */
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.instructions {
+  background: #e8f0fe;
+  color: #1967d2;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.layout {
+  display: flex;
+  gap: 25px;
+  align-items: flex-start;
+}
+
+/* Sidebar (Chapdagi menyu) */
 .sidebar {
-  width: 260px;
-  background-color: var(--sidebar-bg);
-  color: #fff;
-  padding: 20px 0;
+  width: 280px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   flex-shrink: 0;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
 }
 
-.sidebar-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  padding: 0 20px 15px 20px;
-  border-bottom: 1px solid #334155;
-  color: #38bdf8;
+.sidebar h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
 }
 
 .exercise-list {
   list-style: none;
-  padding: 0;
-  margin: 15px 0 0 0;
 }
 
 .exercise-list li {
-  padding: 12px 20px;
+  padding: 10px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
-  color: #cbd5e1;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: #555;
 }
 
 .exercise-list li:hover {
-  background-color: var(--sidebar-hover);
-  color: #fff;
+  background-color: #f1f3f4;
+  color: #1a73e8;
 }
 
-.exercise-list li.active {
-  background-color: var(--primary);
-  color: #fff;
-  font-weight: bold;
+/* Content Area (O'ngdagi matn va savollar qismi) */
+.content-area {
+  flex-grow: 1;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* MAIN CONTAINER STYLES */
-.container {
-  flex: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px 40px;
+.content-area h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #202124;
 }
 
-h1 {
-  text-align: center;
-  color: #1e3a8a;
-  margin-bottom: 10px;
-}
-
-.instructions {
-  background: #e0f2fe;
-  border-left: 4px solid var(--primary);
-  padding: 15px;
-  border-radius: 6px;
+.passage {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.8;
   margin-bottom: 25px;
-  font-size: 0.95rem;
 }
 
-.test-card {
-  position: relative;
-  background: var(--card);
-  border-radius: 12px;
-  padding: 30px 25px 25px 25px;
-  margin-bottom: 35px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-  border: 1px solid #e2e8f0;
-}
-
-.section-badge {
-  position: absolute;
-  top: -12px;
-  left: 20px;
-  background: var(--primary);
-  color: white;
-  padding: 2px 14px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-
-.test-title {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #0f172a;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-}
-
-/* WORD ANNOTATION & GROUP STYLES */
-.word {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  padding: 0 2px;
-  border-radius: 3px;
-  transition: all 0.2s ease;
-}
-
-.word:hover {
-  background-color: #fef08a;
-}
-
-/* Bir nechta so'zdan iborat birikma (Guruh) */
-.word-group {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  border-bottom: 2px dashed #2563eb;
-  padding: 0 2px;
-  border-radius: 3px;
-  transition: background 0.2s;
-  margin-top: 20px;
-}
-
-.word-group:hover {
-  background-color: #fef08a;
-}
-
-/* Guruhning umumiy tarjimasi o'rtada chiqadi */
-.word-group .translation-tag {
-  position: absolute;
-  top: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #d97706;
-  background: #fef3c7;
-  padding: 0 6px;
-  border-radius: 3px;
-  white-space: nowrap;
-  pointer-events: none;
-  line-height: 1.2;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  z-index: 10;
-}
-
-/* QUESTIONS STYLES */
 .questions-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+/* Tugmalar dizayni */
+.action-buttons {
+  display: flex;
+  gap: 15px;
   margin-top: 25px;
-  background: #fafafa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #f1f5f9;
 }
 
-.q-item {
-  margin-bottom: 18px;
-}
-
-input[type="text"] {
-  padding: 6px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  font-size: 1rem;
-  width: 150px;
-  outline: none;
-  transition: border 0.2s;
-}
-
-input[type="text"]:focus {
-  border-color: var(--primary);
-}
-
-.correct-input {
-  border-color: var(--success) !important;
-  background-color: #dcfce7;
-}
-
-.incorrect-input {
-  border-color: var(--danger) !important;
-  background-color: #fee2e2;
-}
-
-.options-group {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.option-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-/* BUTTONS & RESULT BOX */
-.btn-submit {
-  display: block;
-  width: 100%;
-  padding: 15px;
-  background: var(--primary);
-  color: white;
+.btn-success, .btn-secondary, .btn-danger {
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-bottom: 20px;
-}
-
-.btn-submit:hover {
-  background: #1d4ed8;
-}
-
-.result-box {
-  padding: 15px;
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-radius: 8px;
-  display: none;
-}
-
-.correct-ans-text {
-  color: var(--success);
-  font-size: 0.85rem;
-  margin-left: 8px;
-  font-weight: bold;
-}
-
-/* BUTTON ROW + RESET BUTTON */
-.btn-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.btn-row .btn-submit {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-.btn-reset {
-  padding: 15px 20px;
-  background: #fff;
-  color: var(--danger);
-  border: 2px solid var(--danger);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-reset:hover {
-  background: var(--danger);
-  color: #fff;
-}
-
-/* COMPLETED EXERCISE MARK IN SIDEBAR */
-.exercise-list li.done::after {
-  content: " ✓";
-  color: #4ade80;
-  font-weight: bold;
-}
-
-/* SYNC BAR */
-.sync-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 15px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.sync-bar button {
-  padding: 6px 14px;
-  border: 1px solid var(--primary);
-  background: #fff;
-  color: var(--primary);
   border-radius: 6px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
 }
 
-.sync-bar button:hover {
-  background: var(--primary);
-  color: #fff;
+.btn-success { background-color: #34a853; color: white; }
+.btn-secondary { background-color: #f1f3f4; color: #555; }
+.btn-danger { background-color: #ea4335; color: white; }
+
+.btn-success:hover, .btn-secondary:hover, .btn-danger:hover {
+  opacity: 0.9;
 }
 
-.sync-status { margin-left: 8px; font-size: 0.8rem; color: #64748b; }
-.sync-synced { color: var(--success); }
-.sync-error { color: var(--danger); }
-
-/* --- RESPONSIVE / MOBIL UCHUN MOSLASHTIRISH --- */
-@media screen and (max-width: 768px) {
-  body {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    height: auto;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .exercise-list {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    margin: 0;
-    padding: 10px;
-    gap: 8px;
-  }
-
-  .exercise-list li {
-    padding: 8px 14px;
-    border-radius: 6px;
-    background-color: var(--sidebar-hover);
-    flex-shrink: 0;
-  }
-
-  .container {
-    padding: 15px;
-    max-width: 100%;
-  }
-
-  .test-card {
-    padding: 20px 15px 15px 15px;
-  }
-
-  input[type="text"] {
-    width: 100%;
-    margin-top: 6px;
-  }
-
-  .btn-row {
-    flex-direction: column;
-  }
-
-  .btn-reset, .btn-submit {
-    width: 100%;
-  }
-  
-  .sync-bar {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
-}
-
-/* Kirish oynasini ekran markaziga keltirish */
+/* Kirish oynasi (Auth) dizayni */
 .auth-wrapper {
   display: flex;
   justify-content: center;
@@ -408,7 +167,37 @@ input[type="text"]:focus {
   max-width: 400px;
 }
 
-/* Google tugmasi va chiziq dizayni */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 .auth-divider {
   text-align: center;
   margin: 15px 0;
@@ -438,125 +227,15 @@ input[type="text"]:focus {
   background-color: #f8f9fa;
 }
 
-.auth-box h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #1f2937;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #4b5563;
-  font-size: 14px;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 10px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover {
-  background: #1d4ed8;
-}
-
 .auth-switch {
   text-align: center;
   margin-top: 15px;
   font-size: 14px;
-  color: #6b7280;
+  color: #666;
 }
 
 .auth-switch a {
-  color: #2563eb;
+  color: #1a73e8;
   text-decoration: none;
-  font-weight: bold;
-}
-
-.auth-switch a:hover {
-  text-decoration: underline;
-}
-
-.app-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 10px 20px;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.btn-danger {
-  background: #dc2626;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btn-danger:hover {
-  background: #b91c1c;
-}
-
-/* So'zlarni guruhlash va tagiga chizish uslublari */
-.word {
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.word:hover {
-  background-color: #e0f2fe;
-}
-
-.word-group {
-  display: inline-block;
-  border-bottom: 2px dashed #2563eb;
-  position: relative;
-  margin: 0 2px;
-  padding-bottom: 2px;
-  cursor: pointer;
-}
-
-.translation-tag {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #2563eb;
-  color: white;
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  font-weight: bold;
+  font-weight: 600;
 }
