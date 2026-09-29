@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEFR Reading Part 5 Practice</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Chap tomondagi Yon Menyu (Sidebar) -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Mashqlar</div>
+    <ul class="exercise-list">
+      <li class="active" onclick="loadExercise(1)">1. Silk Road</li>
+      <li onclick="loadExercise(2)">2. Life Beyond Earth</li>
+      <li onclick="loadExercise(3)">3. Falcons</li>
+      <li onclick="loadExercise(4)">4. Fashion Impact</li>
+      <li onclick="loadExercise(5)">5. Mind Reading</li>
+      <li onclick="loadExercise(6)">6. Lakes</li>
+      <li onclick="loadExercise(7)">7. Urban Transport</li>
+      <li onclick="loadExercise(8)">8. Remote Work</li>
+      <li onclick="loadExercise(9)">9. Volcanoes</li>
+      <li onclick="loadExercise(10)">10. Butterfly Decline</li>
+      <li onclick="loadExercise(11)">11. Science of Happiness</li>
+      <li onclick="loadExercise(12)">12. Alien Life</li>
+      <li onclick="loadExercise(13)">13. Modern Medicine</li>
+    </ul>
+  </aside>
+
+  <div class="container">
+    <h1>CEFR Reading Part 5 Practice</h1>
+
+    <!-- Bulut sinxronizatsiyasi (Firebase) -->
+    <div id="sync-bar" class="sync-bar"></div>
+    
+    <div class="instructions">
+      💡 <strong>Yo'riqnoma:</strong> Matndagi <u>har qanday so'z ustiga bosing</u> va tarjimasini yozing. So'z tagiga chiziladi va tepasida tarjimasi paydo bo'ladi. Mashq oxirida <strong>"Javoblarni tekshirish"</strong> tugmasini bosing.
+    </div>
+
+    <!-- MAIN EXERCISE CONTENT AREA -->
+    <div class="test-card" id="part-5-section">
+      <div class="section-badge">Part 5</div>
+      <div class="test-title" id="title-1"></div>
+      <div class="passage" id="passage-1"></div>
+      <div class="questions-section" id="questions-1"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-submit" id="check-btn">Javoblarni tekshirish</button>
+      <button class="btn-reset" id="reset-btn" type="button">↺ Bu mashqni qayta boshlash</button>
+    </div>
+    <div id="result-box" class="result-box"></div>
+  </div>
+
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="exercises.js"></script>
+  <script src="script.js"></script>
+  <script src="sync.js"></script>
+</body>
+</html>
