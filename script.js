@@ -1,6 +1,4 @@
 const INPUT_IDS = ['q30', 'q31', 'q32', 'q33'];
-const MC_IDS = ['q34', 'q35'];
-
 let currentExerciseId = 1;
 let currentUserId = null;
 let appState = { exercises: {} };
@@ -22,23 +20,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // 2. Google orqali kirish tugmasi hodisasi
+  // 2. Google orqali kirish
   const googleBtn = document.getElementById('google-login-btn');
   if (googleBtn) {
     googleBtn.addEventListener('click', function() {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then((result) => {
-          console.log("Google orqali muvaffaqiyatli kirildi:", result.user.email);
-        })
-        .catch((error) => {
-          console.error("Xatolik:", error.message);
-          alert("Google orqali kirishda xatolik: " + error.message);
-        });
+      auth.signInWithPopup(provider).catch((error) => alert("Xatolik: " + error.message));
     });
   }
 
-  // 3. Email va parol orqali kirish / ro'yxatdan o'tish formasi
+  // 3. Email va parol orqali kirish / ro'yxatdan o'tish
   const authForm = document.getElementById('auth-form');
   if (authForm) {
     authForm.addEventListener('submit', function (e) {
@@ -47,18 +38,14 @@ document.addEventListener('DOMContentLoaded', function () {
       const password = document.getElementById('auth-password').value;
 
       if (isSignUpMode) {
-        // Ro'yxatdan o'tish
-        auth.createUserWithEmailAndPassword(email, password)
-          .catch(error => alert("Xatolik: " + error.message));
+        auth.createUserWithEmailAndPassword(email, password).catch(error => alert("Xatolik: " + error.message));
       } else {
-        // Tizimga kirish
-        auth.signInWithEmailAndPassword(email, password)
-          .catch(error => alert("Xatolik: " + error.message));
+        auth.signInWithEmailAndPassword(email, password).catch(error => alert("Xatolik: " + error.message));
       }
     });
   }
 
-  // 4. Kirish va Ro'yxatdan o'tish rejimini almashtirish
+  // 4. Rejimni almashtirish (Kirish / Ro'yxatdan o'tish)
   const authToggleLink = document.getElementById('auth-toggle-link');
   if (authToggleLink) {
     authToggleLink.addEventListener('click', function (e) {
@@ -71,37 +58,110 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // 5. Chiqish (Log out) tugmasi
+  // 5. Chiqish (Log out)
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', function () {
-      auth.signOut();
-    });
+    logoutBtn.addEventListener('click', () => auth.signOut());
   }
 
-  // Dastlabki mashqni yuklash
+  // Mashqni yuklash
   loadExercise(currentExerciseId);
+
+  // Javoblarni tekshirish tugmasi
+  const checkBtn = document.getElementById('check-btn');
+  if (checkBtn) {
+    checkBtn.addEventListener('click', checkAnswers);
+  }
+
+  // Qaytadan boshlash tugmasi
+  const resetBtn = document.getElementById('reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetExercise);
+  }
 });
 
-// Mashq ma'lumotlarini yuklash funksiyasi
+// Mashqni yuklash va so'zlarni bosiladigan qilish
 function loadExercise(id) {
   currentExerciseId = id;
   const ex = exercisesData[id];
   if (!ex) return;
 
   document.getElementById(`title-${id}`).innerText = ex.title1;
-  document.getElementById(`passage-${id}`).innerHTML = ex.passage1;
+  
+  // Matndagi har bir so'zni alohida span elementiga bo'lib chiqish (tarjima qilish uchun)
+  const passageContainer = document.getElementById(`passage-${id}`);
+  const words = ex.passage1.split(/\s+/);
+  passageContainer.innerHTML = words.map(word => `<span class="clickable-word" onclick="toggleWordSelection(this)">${word}</span>`).join(' ');
+
   document.getElementById(`questions-${id}`).innerHTML = ex.questions1;
+
+  // Tarjima qilish tugmasiga hodisa qo'shish
+  setTimeout(() => {
+    const translateBtn = document.getElementById('translate-btn');
+    if (translateBtn) {
+      translateBtn.addEventListener('click', handleTranslation);
+    }
+  }, 100);
 }
 
-// Bulutdan (Firestore) foydalanuvchi ma'lumotlarini yuklash
+// So'zni tanlash/bekor qilish
+function toggleWordSelection(element) {
+  element.classList.toggle('selected');
+  const word = element.innerText;
+  
+  if (element.classList.contains('selected')) {
+    selectedWordsForGrouping.push(word);
+  } else {
+    selectedWordsForGrouping = selectedWordsForGrouping.filter(w => w !== word);
+  }
+}
+
+// Tanlangan so'zlarni tarjima qilish
+function handleTranslation() {
+  if (selectedWordsForGrouping.length === 0) {
+    alert("Iltimos, matndan kamida bitta so'zni tanlang!");
+    return;
+  }
+  const phrase = selectedWordsForGrouping.join(' ');
+  const translation = prompt(`"${phrase}" birikmasining tarjimasini kiriting:`);
+  
+  if (translation) {
+    const resBox = document.getElementById('translation-result');
+    resBox.innerHTML += `<div>📌 <b>${phrase}</b> — ${translation}</div>`;
+    selectedWordsForGrouping = [];
+    document.querySelectorAll('.clickable-word.selected').forEach(el => el.classList.remove('selected'));
+  }
+}
+
+// Javoblarni tekshirish
+function checkAnswers() {
+  const q30 = document.getElementById('q30')?.value.trim().toLowerCase() || "";
+  const q31 = document.getElementById('q31')?.value.trim().toLowerCase() || "";
+  
+  let score = 0;
+  if (q30.includes('ferdinand') || q30.includes('richthofen')) score++;
+  if (q31.includes('han')) score++;
+
+  const resultBox = document.getElementById('result-box');
+  resultBox.style.display = 'block';
+  resultBox.innerHTML = `Natijangiz: <b>${score} ta</b> to'g'ri topildi.`;
+}
+
+// Qaytadan boshlash
+function resetExercise() {
+  INPUT_IDS.forEach(id => {
+    const input = document.getElementById(id);
+    if (input) input.value = '';
+  });
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('translation-result').innerHTML = '';
+  selectedWordsForGrouping = [];
+  document.querySelectorAll('.clickable-word.selected').forEach(el => el.classList.remove('selected'));
+}
+
+// Bulutdan yuklash
 function loadUserDataFromCloud(userId) {
-  const docRef = db.collection("users").doc(userId);
-  docRef.get().then((doc) => {
-    if (doc.exists) {
-      appState = doc.data();
-    }
-  }).catch((error) => {
-    console.error("Ma'lumotlarni yuklashda xatolik:", error);
+  db.collection("users").doc(userId).get().then((doc) => {
+    if (doc.exists) appState = doc.data();
   });
 }
