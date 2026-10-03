@@ -1,5 +1,6 @@
 let currentExerciseId = 1;
 const translationsStorageKey = 'readingWordTranslations';
+const marksStorageKey = 'readingMarkedWords';
 
 function getWordTranslations() {
     try {
@@ -22,7 +23,7 @@ function escapeHtml(value) {
 let selectedTranslationTarget = null; // hozir tahrirlanayotgan so'z yoki ibora
 let selectedPhraseRange = null;       // sichqoncha bilan sudrab belgilangan ibora
 let clickedWordOnMouseDown = false;
-let markMode = false;                 // true: bosganda faqat belgilanadi
+let markMode = true;                  // true: bosganda faqat belgilanadi (odatiy)
 const markedWords = new Map();        // kalit -> { scope, index }
 let markedQueue = [];
 let markedQueueIndex = 0;
@@ -106,10 +107,8 @@ function updateTranslationControls() {
     modeToggleButton.addEventListener('click', () => {
         markMode = !markMode;
         if (!markMode) {
-            markedWords.clear();
             stopQueue();
             if (selectedTranslationTarget && selectedTranslationTarget.queueLength) closeWordTranslation();
-            refreshHighlight();
         }
         updateTranslationControls();
     });
@@ -167,10 +166,52 @@ function openWordTranslation(wordEl, queuePosition = 0, queueLength = 0) {
 
 /* ---------- Belgilab, keyin ketma-ket yozish ---------- */
 
+function getStoredMarks() {
+    try {
+        return JSON.parse(localStorage.getItem(marksStorageKey) || '{}');
+    } catch (error) {
+        return {};
+    }
+}
+
+// Joriy mashqdagi belgilarni brauzerga va bulutga yozadi
+function persistMarks() {
+    const stored = getStoredMarks();
+    const prefix = `${currentExerciseId}-`;
+    Object.keys(stored).forEach(key => {
+        if (key.startsWith(prefix)) delete stored[key];
+    });
+    markedWords.forEach((item, key) => { stored[key] = true; });
+    try {
+        localStorage.setItem(marksStorageKey, JSON.stringify(stored));
+    } catch (error) {
+        console.error('Belgilarni saqlab bo‘lmadi:', error);
+    }
+    if (window.Cloud && window.Cloud.saveMarks) window.Cloud.saveMarks();
+}
+
+// Saqlangan belgilarni joriy mashq uchun tiklaydi
+function loadMarksForExercise(id) {
+    markedWords.clear();
+    const prefix = `${id}-`;
+    Object.keys(getStoredMarks()).forEach(key => {
+        if (!key.startsWith(prefix)) return;
+        const rest = key.slice(prefix.length);
+        let match = rest.match(/^(\d+)$/);
+        if (match) {
+            markedWords.set(key, { key, scope: 'p', index: Number(match[1]) });
+            return;
+        }
+        match = rest.match(/^(q\d+)-(\d+)$/);
+        if (match) markedWords.set(key, { key, scope: match[1], index: Number(match[2]) });
+    });
+}
+
 function toggleWordMark(scope, index) {
     const key = getWordTranslationKey(currentExerciseId, scope, index);
     if (markedWords.has(key)) markedWords.delete(key);
     else markedWords.set(key, { key, scope, index });
+    persistMarks();
     refreshHighlight();
     updateTranslationControls();
 }
@@ -182,6 +223,7 @@ function stopQueue() {
 
 function clearAllMarks() {
     markedWords.clear();
+    persistMarks();
     stopQueue();
     if (selectedTranslationTarget) closeWordTranslation();
     else clearPhraseSelection();
@@ -209,6 +251,7 @@ function openNextInQueue() {
             return;
         }
         markedWords.delete(item.key);
+        persistMarks();
         markedQueueIndex++;
     }
     stopQueue();
@@ -296,6 +339,7 @@ function saveWordTranslation() {
 
     if (target.queueLength) {
         markedWords.delete(target.key);
+        persistMarks();
         markedQueueIndex++;
         openNextInQueue();
     }
@@ -449,10 +493,11 @@ window.onload = function () {
 };
 
 function loadExercise(id) {
-    markedWords.clear();
     stopQueue();
     closeWordTranslation();
     currentExerciseId = id;
+    loadMarksForExercise(id);
+    updateTranslationControls();
     const ex = exercisesData[id];
     if (!ex) return;
 
@@ -547,6 +592,8 @@ function applyTranslationsUpdate() {
     if (typeof exercisesData === 'undefined' || !exercisesData[currentExerciseId]) return;
     stopQueue();
     closeWordTranslation();
+    loadMarksForExercise(currentExerciseId);
+    updateTranslationControls();
     renderPassage(currentExerciseId, passageElement);
     rebuildQuestions();
 }

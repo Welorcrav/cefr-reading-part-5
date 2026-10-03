@@ -3,6 +3,7 @@
     const config = window.FIREBASE_CONFIG;
     const storageKey = 'readingWordTranslations';
     const ownerKey = 'readingWordTranslationsOwner';
+    const marksKey = 'readingMarkedWords';
 
     if (!config || typeof firebase === 'undefined') {
         bar.textContent = 'Google sinxronlashi yuklanmadi. Internet aloqasini tekshiring.';
@@ -25,6 +26,18 @@
         } catch (error) {
             return {};
         }
+    }
+
+    function readMarks() {
+        try {
+            return JSON.parse(localStorage.getItem(marksKey) || '{}');
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function writeMarks(marks) {
+        localStorage.setItem(marksKey, JSON.stringify(marks));
     }
 
     function writeTranslations(translations) {
@@ -64,8 +77,9 @@
     }
 
     function clearLocalWork() {
-        const hadData = localStorage.getItem(storageKey) !== null;
+        const hadData = localStorage.getItem(storageKey) !== null || localStorage.getItem(marksKey) !== null;
         localStorage.removeItem(storageKey);
+        localStorage.removeItem(marksKey);
         localStorage.removeItem(ownerKey);
         if (hadData) window.dispatchEvent(new Event('translations-updated'));
     }
@@ -84,9 +98,12 @@
         });
     }
 
-    function saveToCloud(translations) {
+    function saveToCloud() {
         if (!documentRef) return Promise.resolve();
-        return documentRef.set({ translations }, { mergeFields: ['translations'] });
+        return documentRef.set(
+            { translations: readTranslations(), marks: readMarks() },
+            { mergeFields: ['translations', 'marks'] }
+        );
     }
 
     async function connectUser(nextUser) {
@@ -106,7 +123,9 @@
         status = 'syncing';
         renderBar();
         const savedOwner = localStorage.getItem(ownerKey);
-        const local = savedOwner && savedOwner !== user.uid ? {} : readTranslations();
+        const sameOwner = !savedOwner || savedOwner === user.uid;
+        const local = sameOwner ? readTranslations() : {};
+        const localMarks = sameOwner ? readMarks() : {};
         localStorage.setItem(ownerKey, user.uid);
         const currentUser = user;
         documentRef = database.collection('users').doc(user.uid);
@@ -114,21 +133,31 @@
         try {
             const snapshot = await documentRef.get();
             if (!user || user.uid !== currentUser.uid) return;
-            const remote = snapshot.exists ? snapshot.data().translations || {} : {};
+            const remoteData = snapshot.exists ? snapshot.data() : {};
+            const remote = remoteData.translations || {};
+            const remoteMarks = remoteData.marks;
             const merged = { ...local, ...remote };
+            // Belgilar: bulutdagisi asos, bulutda hali yo'q bo'lsa — shu qurilmadagisi
+            const mergedMarks = remoteMarks !== undefined ? remoteMarks : localMarks;
             writeTranslations(merged);
+            writeMarks(mergedMarks);
             window.dispatchEvent(new Event('translations-updated'));
 
-            if (JSON.stringify(merged) !== JSON.stringify(remote)) {
-                await saveToCloud(merged);
+            if (JSON.stringify(merged) !== JSON.stringify(remote) ||
+                JSON.stringify(mergedMarks) !== JSON.stringify(remoteMarks || {})) {
+                await saveToCloud();
             }
 
             unsubscribe = documentRef.onSnapshot(snapshotUpdate => {
                 if (snapshotUpdate.metadata.fromCache || snapshotUpdate.metadata.hasPendingWrites) return;
                 if (pendingTranslations) return;
-                const latest = snapshotUpdate.exists ? snapshotUpdate.data().translations || {} : {};
-                if (JSON.stringify(latest) !== JSON.stringify(readTranslations())) {
+                const data = snapshotUpdate.exists ? snapshotUpdate.data() : {};
+                const latest = data.translations || {};
+                const latestMarks = data.marks || {};
+                if (JSON.stringify(latest) !== JSON.stringify(readTranslations()) ||
+                    JSON.stringify(latestMarks) !== JSON.stringify(readMarks())) {
                     writeTranslations(latest);
+                    writeMarks(latestMarks);
                     window.dispatchEvent(new Event('translations-updated'));
                 }
                 status = 'synced';
@@ -145,26 +174,29 @@
         }
     }
 
-    window.Cloud = {
-        saveTranslations(translations) {
-            if (!user || !documentRef) return;
-            pendingTranslations = true;
-            status = 'saving';
+    function scheduleSave() {
+        if (!user || !documentRef) return;
+        pendingTranslations = true;
+        status = 'saving';
+        renderBar();
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(async () => {
+            try {
+                await saveToCloud();
+                pendingTranslations = false;
+                status = 'synced';
+            } catch (error) {
+                console.error('Firestore yozishda xato:', error);
+                status = 'error';
+                saveTimer = setTimeout(scheduleSave, 5000);
+            }
             renderBar();
-            clearTimeout(saveTimer);
-            saveTimer = setTimeout(async () => {
-                try {
-                    await saveToCloud(translations);
-                    pendingTranslations = false;
-                    status = 'synced';
-                } catch (error) {
-                    console.error('Firestore yozishda xato:', error);
-                    status = 'error';
-                    saveTimer = setTimeout(() => window.Cloud.saveTranslations(readTranslations()), 5000);
-                }
-                renderBar();
-            }, 700);
-        }
+        }, 700);
+    }
+
+    window.Cloud = {
+        saveTranslations: scheduleSave,
+        saveMarks: scheduleSave
     };
 
     auth.onAuthStateChanged(connectUser);
