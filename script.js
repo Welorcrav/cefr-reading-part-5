@@ -492,11 +492,23 @@ window.onload = function () {
     }
 };
 
+// Ro'yxatda hozirgi mashqni ajratib ko'rsatadi (telefonda ro'yxat suriladi)
+function markActiveExercise(id) {
+    const list = document.getElementById('exercise-list');
+    if (!list) return;
+    list.querySelectorAll('li').forEach((li, index) => li.classList.toggle('active', index + 1 === id));
+    const active = list.querySelector('li.active');
+    if (active && list.scrollWidth > list.clientWidth) {
+        list.scrollLeft = active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+    }
+}
+
 function loadExercise(id) {
     stopQueue();
     closeWordTranslation();
     currentExerciseId = id;
     loadMarksForExercise(id);
+    markActiveExercise(id);
     updateTranslationControls();
     const ex = exercisesData[id];
     if (!ex) return;
