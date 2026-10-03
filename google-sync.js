@@ -45,7 +45,29 @@
             error: 'Sinxronlashda xato'
         };
         bar.innerHTML = `<span>${user.displayName || user.email || 'Google akkaunt'}<span class="sync-status">${messages[status] || ''}</span></span><button id="google-logout" type="button">Chiqish</button>`;
-        document.getElementById('google-logout').addEventListener('click', () => auth.signOut());
+        document.getElementById('google-logout').addEventListener('click', signOut);
+    }
+
+    async function signOut() {
+        // Chiqishdan oldin hali saqlanmagan o'zgarishlarni bulutga yozib qo'yamiz
+        if (pendingTranslations && documentRef) {
+            clearTimeout(saveTimer);
+            try {
+                await saveToCloud(readTranslations());
+                pendingTranslations = false;
+            } catch (error) {
+                console.error('Chiqishdan oldin saqlashda xato:', error);
+                if (!confirm('Oxirgi o‘zgarishlar bulutga saqlanmadi. Baribir chiqasizmi?')) return;
+            }
+        }
+        auth.signOut();
+    }
+
+    function clearLocalWork() {
+        const hadData = localStorage.getItem(storageKey) !== null;
+        localStorage.removeItem(storageKey);
+        localStorage.removeItem(ownerKey);
+        if (hadData) window.dispatchEvent(new Event('translations-updated'));
     }
 
     function signIn() {
@@ -74,7 +96,9 @@
         clearTimeout(saveTimer);
 
         if (!user) {
+            pendingTranslations = false;
             status = 'idle';
+            clearLocalWork();
             renderBar();
             return;
         }
