@@ -19,12 +19,29 @@ function escapeHtml(value) {
     })[character]);
 }
 
-let selectedTranslationTarget = null;
-let selectedPhraseRange = null;
+let selectedTranslationTarget = null; // hozir tahrirlanayotgan so'z yoki ibora
+let selectedPhraseRange = null;       // sichqoncha bilan sudrab belgilangan ibora
 let clickedWordOnMouseDown = false;
-const markedWords = new Map();
-let markedWordQueue = [];
-let markedWordQueueIndex = 0;
+
+const translateSelectionButton = document.getElementById('translate-selection');
+const clearSelectionButton = document.getElementById('clear-selection');
+const passageElement = document.getElementById('exercise-passage');
+const questionsElement = document.getElementById('exercise-questions');
+const translationInput = document.getElementById('translation-input');
+
+const DEFAULT_HINT = "So'zni bosing. Ibora uchun sudrab belgilang";
+
+/* Javob yozilayotgan maydondagi kursorni buzmaslik uchun */
+function isTypingInAnswerField() {
+    const active = document.activeElement;
+    return !!active && active.tagName === 'INPUT' && active.id !== 'translation-input' &&
+        !!active.closest('#exercise-questions');
+}
+
+function clearNativeSelection() {
+    if (isTypingInAnswerField()) return;
+    window.getSelection().removeAllRanges();
+}
 
 function getWordTranslationKey(exerciseId, scope, wordIndex) {
     return scope === 'p'
@@ -38,16 +55,77 @@ function getPhraseTranslationKey(exerciseId, scope, start, end) {
         : `${exerciseId}-${scope}-phrase-${start}-${end}`;
 }
 
-function openWordTranslation(wordEl, queuePosition = 0, queueLength = 0) {
+function findWordEl(scope, index) {
+    return document.querySelector(
+        `.clickable-word[data-translation-scope="${scope}"][data-word-index="${index}"]`
+    );
+}
+
+/* ---------- Belgilash (highlight) ---------- */
+
+function getTargetRange() {
+    const t = selectedTranslationTarget;
+    if (!t) return null;
+    return t.type === 'word'
+        ? { scope: t.scope, start: t.index, end: t.index }
+        : { scope: t.scope, start: t.start, end: t.end };
+}
+
+function refreshHighlight() {
+    const range = selectedPhraseRange || getTargetRange();
+    document.querySelectorAll('.clickable-word').forEach(wordEl => {
+        const index = Number(wordEl.dataset.wordIndex);
+        wordEl.classList.toggle(
+            'is-selected',
+            !!range && wordEl.dataset.translationScope === range.scope &&
+                index >= range.start && index <= range.end
+        );
+    });
+}
+
+function updateTranslationControls() {
+    const hasPhrase = !!selectedPhraseRange;
+    translateSelectionButton.disabled = !hasPhrase;
+    translateSelectionButton.textContent = hasPhrase
+        ? `${selectedPhraseRange.end - selectedPhraseRange.start + 1} ta so'zli iborani tarjima qilish`
+        : DEFAULT_HINT;
+    if (clearSelectionButton) clearSelectionButton.disabled = !hasPhrase && !selectedTranslationTarget;
+}
+
+function setSelectedPhraseRange(phraseRange) {
+    selectedPhraseRange = phraseRange;
+    refreshHighlight();
+    updateTranslationControls();
+}
+
+function clearPhraseSelection() {
+    setSelectedPhraseRange(null);
+    clearNativeSelection();
+}
+
+/* ---------- Tarjima muharriri ---------- */
+
+function openTranslationEditor(target) {
+    selectedTranslationTarget = target;
+    const translations = getWordTranslations();
+    document.getElementById('translation-label').textContent = `"${target.phraseText}" tarjimasi`;
+    translationInput.value = translations[target.key] || '';
+    document.getElementById('translation-editor').hidden = false;
+    refreshHighlight();
+    updateTranslationControls();
+    translationInput.focus();
+    translationInput.select();
+}
+
+function openWordTranslation(wordEl) {
     const scope = wordEl.dataset.translationScope;
+    const index = Number(wordEl.dataset.wordIndex);
     openTranslationEditor({
         type: 'word',
-        key: getWordTranslationKey(currentExerciseId, scope, Number(wordEl.dataset.wordIndex)),
+        key: getWordTranslationKey(currentExerciseId, scope, index),
         scope,
-        wordEl,
-        phraseText: wordEl.dataset.word,
-        queuePosition,
-        queueLength
+        index,
+        phraseText: wordEl.dataset.word
     });
 }
 
@@ -62,21 +140,30 @@ function openPhraseTranslation(scope, start, end, phraseText) {
     });
 }
 
-function openTranslationEditor(target) {
-    selectedTranslationTarget = target;
-    const translations = getWordTranslations();
-    const position = target.queuePosition ? `${target.queuePosition}/${target.queueLength}: ` : '';
-    document.getElementById('translation-label').textContent = `${position}"${target.phraseText}" tarjimasi`;
-    const input = document.getElementById('translation-input');
-    input.value = translations[target.key] || '';
-    document.getElementById('translation-editor').hidden = false;
-    input.focus();
-    input.select();
+function openPhraseFromElement(el) {
+    openPhraseTranslation(
+        el.dataset.phraseScope,
+        Number(el.dataset.phraseStart),
+        Number(el.dataset.phraseEnd),
+        el.dataset.phraseText
+    );
 }
 
 function closeWordTranslation() {
     selectedTranslationTarget = null;
+    selectedPhraseRange = null;
     document.getElementById('translation-editor').hidden = true;
+    clearNativeSelection();
+    refreshHighlight();
+    updateTranslationControls();
+}
+
+function refreshScope(scope) {
+    if (scope === 'p') {
+        renderPassage(currentExerciseId, passageElement);
+    } else {
+        rebuildQuestions();
+    }
 }
 
 function saveWordTranslation() {
@@ -84,9 +171,11 @@ function saveWordTranslation() {
 
     const target = selectedTranslationTarget;
     const translations = getWordTranslations();
-    const cleanedTranslation = document.getElementById('translation-input').value.trim();
+    const cleanedTranslation = translationInput.value.trim();
+
     if (cleanedTranslation) {
         if (target.type === 'phrase') {
+            // Ustma-ust tushgan eski iboralarni olib tashlaymiz
             const phrasePrefix = target.scope === 'p'
                 ? `${currentExerciseId}-phrase-`
                 : `${currentExerciseId}-${target.scope}-phrase-`;
@@ -109,44 +198,12 @@ function saveWordTranslation() {
     }
     if (window.Cloud) window.Cloud.saveTranslations(translations);
 
-    if (target.type === 'phrase') {
-        if (target.scope === 'p') {
-            renderPassage(currentExerciseId, document.getElementById('exercise-passage'));
-        } else {
-            renderQuestionPhraseTranslations(currentExerciseId, document.getElementById('exercise-questions'));
-        }
-    } else {
-        const existingTranslation = target.wordEl.querySelector(':scope > .word-translation:not(.question-phrase-translation)');
-        if (existingTranslation) existingTranslation.remove();
-
-        if (cleanedTranslation) {
-            const translationEl = document.createElement('span');
-            translationEl.className = 'word-translation';
-            translationEl.textContent = cleanedTranslation;
-            target.wordEl.insertBefore(translationEl, target.wordEl.firstChild);
-        }
-    }
-
-    if (target.queuePosition) {
-        target.wordEl.classList.remove('is-marked');
-        markedWords.delete(target.key);
-        closeWordTranslation();
-        markedWordQueueIndex++;
-
-        if (markedWordQueueIndex < markedWordQueue.length) {
-            openWordTranslation(markedWordQueue[markedWordQueueIndex], markedWordQueueIndex + 1, markedWordQueue.length);
-        } else {
-            markedWordQueue = [];
-            markedWordQueueIndex = 0;
-            updateTranslationControls();
-            clearPhraseSelection();
-        }
-        return;
-    }
-
+    const scope = target.scope;
     closeWordTranslation();
-    clearPhraseSelection();
+    refreshScope(scope);
 }
+
+/* ---------- Matndan belgilangan iborani aniqlash ---------- */
 
 function getWordElement(node) {
     const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
@@ -171,76 +228,6 @@ function getSelectedPhraseRange() {
     return { scope, start, end, phraseText };
 }
 
-const translateSelectionButton = document.getElementById('translate-selection');
-const clearSelectionButton = document.getElementById('clear-selection');
-const passageElement = document.getElementById('exercise-passage');
-const questionsElement = document.getElementById('exercise-questions');
-
-function updateTranslationControls() {
-    const markedCount = markedWords.size;
-    const hasPhrase = !!selectedPhraseRange;
-    translateSelectionButton.disabled = markedCount === 0 && !hasPhrase;
-    clearSelectionButton.disabled = markedCount === 0 && !hasPhrase;
-    translateSelectionButton.textContent = markedCount
-        ? `${markedCount} ta belgilangan so'zga tarjima yozish`
-        : hasPhrase
-            ? `${selectedPhraseRange.end - selectedPhraseRange.start + 1} ta so'zli iborani tarjima qilish`
-            : "Notanish so'zlarni belgilang";
-}
-
-function setSelectedPhraseRange(phraseRange) {
-    selectedPhraseRange = phraseRange;
-    document.querySelectorAll('.clickable-word').forEach(wordEl => {
-        const wordIndex = Number(wordEl.dataset.wordIndex);
-        wordEl.classList.toggle(
-            'is-selected',
-            !!phraseRange && wordEl.dataset.translationScope === phraseRange.scope &&
-                wordIndex >= phraseRange.start && wordIndex <= phraseRange.end
-        );
-    });
-    updateTranslationControls();
-}
-
-function clearPhraseSelection() {
-    setSelectedPhraseRange(null);
-    window.getSelection().removeAllRanges();
-}
-
-function toggleWordMark(wordEl) {
-    const scope = wordEl.dataset.translationScope;
-    const wordIndex = Number(wordEl.dataset.wordIndex);
-    const key = getWordTranslationKey(currentExerciseId, scope, wordIndex);
-
-    if (markedWords.has(key)) {
-        markedWords.delete(key);
-        wordEl.classList.remove('is-marked');
-    } else {
-        markedWords.set(key, wordEl);
-        wordEl.classList.add('is-marked');
-    }
-    setSelectedPhraseRange(null);
-}
-
-function clearAllSelections() {
-    markedWords.forEach(wordEl => wordEl.classList.remove('is-marked'));
-    markedWords.clear();
-    markedWordQueue = [];
-    markedWordQueueIndex = 0;
-    if (selectedTranslationTarget && selectedTranslationTarget.queuePosition) closeWordTranslation();
-    clearPhraseSelection();
-}
-
-function startMarkedWordTranslations() {
-    markedWordQueue = Array.from(markedWords.values()).sort((first, second) => {
-        const position = first.compareDocumentPosition(second);
-        return position & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
-    });
-    if (!markedWordQueue.length) return;
-
-    markedWordQueueIndex = 0;
-    openWordTranslation(markedWordQueue[0], 1, markedWordQueue.length);
-}
-
 document.addEventListener('selectionchange', () => {
     const phraseRange = getSelectedPhraseRange();
     if (phraseRange) setSelectedPhraseRange(phraseRange);
@@ -254,8 +241,7 @@ function trackWordSelection(region) {
         const phraseRange = getSelectedPhraseRange();
         if (phraseRange) {
             setSelectedPhraseRange(phraseRange);
-        } else if (!clickedWordOnMouseDown) {
-            clearPhraseSelection();
+            openPhraseTranslation(phraseRange.scope, phraseRange.start, phraseRange.end, phraseRange.phraseText);
         }
         clickedWordOnMouseDown = false;
     });
@@ -266,9 +252,7 @@ trackWordSelection(questionsElement);
 
 translateSelectionButton.addEventListener('mousedown', event => event.preventDefault());
 translateSelectionButton.addEventListener('click', () => {
-    if (markedWords.size) {
-        startMarkedWordTranslations();
-    } else if (selectedPhraseRange) {
+    if (selectedPhraseRange) {
         openPhraseTranslation(
             selectedPhraseRange.scope,
             selectedPhraseRange.start,
@@ -277,20 +261,19 @@ translateSelectionButton.addEventListener('click', () => {
         );
     }
 });
-clearSelectionButton.addEventListener('mousedown', event => event.preventDefault());
-clearSelectionButton.addEventListener('click', clearAllSelections);
+
+if (clearSelectionButton) {
+    clearSelectionButton.addEventListener('mousedown', event => event.preventDefault());
+    clearSelectionButton.addEventListener('click', closeWordTranslation);
+}
+
+/* ---------- Bosish (click) ---------- */
 
 document.addEventListener('click', event => {
-    const phraseAnnotation = event.target.closest('.translated-phrase rt, .question-phrase-translation');
-    if (phraseAnnotation) {
-        const phraseEl = phraseAnnotation.closest('.translated-phrase');
-        const scope = phraseEl ? 'p' : phraseAnnotation.dataset.phraseScope;
-        openPhraseTranslation(
-            scope,
-            Number(phraseAnnotation.dataset.phraseStart || phraseEl.dataset.phraseStart),
-            Number(phraseAnnotation.dataset.phraseEnd || phraseEl.dataset.phraseEnd),
-            phraseAnnotation.dataset.phraseText || phraseEl.dataset.phraseText
-        );
+    // Ibora tarjimasi ustiga bosildi -> tahrirlash
+    const annotation = event.target.closest('.phrase-translation');
+    if (annotation) {
+        openPhraseFromElement(annotation.closest('.translated-phrase') || annotation);
         return;
     }
 
@@ -298,34 +281,61 @@ document.addEventListener('click', event => {
     if (!wordEl) return;
     event.preventDefault();
 
-    const phraseRange = getSelectedPhraseRange();
-    if (phraseRange) setSelectedPhraseRange(phraseRange);
-    else toggleWordMark(wordEl);
-});
-
-document.addEventListener('keydown', event => {
-    const phraseAnnotation = event.target.closest('.question-phrase-translation, .translated-phrase rt');
-    if (phraseAnnotation && (event.key === 'Enter' || event.key === ' ')) {
-        event.preventDefault();
-        phraseAnnotation.click();
+    // Sudrab belgilash tugagan bo'lsa, muharrir allaqachon ochilgan
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed) {
+        if (selectedTranslationTarget) translationInput.focus();
         return;
     }
 
-    const wordEl = event.target.closest('.clickable-word');
-    if (wordEl && (event.key === 'Enter' || event.key === ' ')) {
+    // Tayyor iboraning ichidagi so'z -> butun iborani tahrirlash
+    const phraseEl = wordEl.closest('.translated-phrase');
+    if (phraseEl) {
+        openPhraseFromElement(phraseEl);
+        return;
+    }
+
+    const scope = wordEl.dataset.translationScope;
+    const index = Number(wordEl.dataset.wordIndex);
+    const current = selectedTranslationTarget;
+
+    if (current && current.type === 'word' && current.scope === scope && current.index === index) {
+        translationInput.focus();
+        return;
+    }
+
+    // Boshqa so'z ochiq bo'lsa: o'zgarish bo'lsa avtomatik saqlaymiz
+    if (current) {
+        const stored = getWordTranslations()[current.key] || '';
+        if (translationInput.value.trim() !== stored) saveWordTranslation();
+        else closeWordTranslation();
+    }
+
+    const nextEl = findWordEl(scope, index);
+    if (nextEl) openWordTranslation(nextEl);
+});
+
+document.addEventListener('keydown', event => {
+    const target = event.target;
+    if (!target.closest) return;
+    const interactive = target.closest('.phrase-translation, .clickable-word');
+    if (interactive && (event.key === 'Enter' || event.key === ' ')) {
         event.preventDefault();
-        toggleWordMark(wordEl);
+        interactive.click();
     }
 });
 
 document.getElementById('translation-save').addEventListener('click', saveWordTranslation);
 document.getElementById('translation-cancel').addEventListener('click', closeWordTranslation);
-document.getElementById('translation-input').addEventListener('keydown', event => {
+translationInput.addEventListener('keydown', event => {
     if (event.key === 'Enter') saveWordTranslation();
     if (event.key === 'Escape') closeWordTranslation();
 });
 
-window.onload = function() {
+/* ---------- Mashqni yuklash ---------- */
+
+window.onload = function () {
+    updateTranslationControls();
     if (typeof exercisesData !== 'undefined' && exercisesData[1]) {
         loadExercise(1);
     }
@@ -333,20 +343,16 @@ window.onload = function() {
 
 function loadExercise(id) {
     closeWordTranslation();
-    clearAllSelections();
     currentExerciseId = id;
     const ex = exercisesData[id];
     if (!ex) return;
 
     const titleEl = document.getElementById('exercise-title');
-    const questionsEl = document.getElementById('exercise-questions');
     if (titleEl) titleEl.innerText = ex.title1 || `Mashq ${id}`;
     renderPassage(id, passageElement);
 
-    if (questionsEl) {
-        questionsEl.innerHTML = ex.questions1 || '';
-        prepareQuestionTranslations(id, questionsEl);
-    }
+    questionsElement.innerHTML = ex.questions1 || '';
+    prepareQuestionTranslations(id, questionsElement);
 
     const resultBox = document.getElementById('result-box');
     if (resultBox) {
@@ -400,26 +406,51 @@ function resetExercise() {
     loadExercise(currentExerciseId);
 }
 
-window.addEventListener('translations-updated', () => {
-    if (!document.querySelector('#exercise-questions .question-item')) return;
+/* Savollarni qayta chizish (yozilgan javoblar saqlanib qoladi) */
+function rebuildQuestions() {
+    const ex = exercisesData[currentExerciseId];
+    if (!ex) return;
 
-    const textAnswers = Array.from(document.querySelectorAll('#exercise-questions input[type="text"]'))
-        .map(input => input.value);
-    const radioAnswers = Array.from(document.querySelectorAll('#exercise-questions input[type="radio"]'))
+    const inputs = Array.from(questionsElement.querySelectorAll('input[type="text"]'))
+        .map(input => ({ value: input.value, style: input.getAttribute('style') || '' }));
+    const radios = Array.from(questionsElement.querySelectorAll('input[type="radio"]'))
         .map(input => input.checked);
+    const groups = Array.from(questionsElement.querySelectorAll('.options-group'))
+        .map(group => group.getAttribute('style') || '');
 
-    closeWordTranslation();
-    clearAllSelections();
-    renderPassage(currentExerciseId, passageElement);
-    questionsElement.innerHTML = exercisesData[currentExerciseId].questions1 || '';
+    questionsElement.innerHTML = ex.questions1 || '';
     prepareQuestionTranslations(currentExerciseId, questionsElement);
-    document.querySelectorAll('#exercise-questions input[type="text"]').forEach((input, index) => {
-        input.value = textAnswers[index] || '';
+
+    questionsElement.querySelectorAll('input[type="text"]').forEach((input, index) => {
+        if (!inputs[index]) return;
+        input.value = inputs[index].value;
+        if (inputs[index].style) input.setAttribute('style', inputs[index].style);
     });
-    document.querySelectorAll('#exercise-questions input[type="radio"]').forEach((input, index) => {
-        input.checked = !!radioAnswers[index];
+    questionsElement.querySelectorAll('input[type="radio"]').forEach((input, index) => {
+        input.checked = !!radios[index];
     });
+    questionsElement.querySelectorAll('.options-group').forEach((group, index) => {
+        if (groups[index]) group.setAttribute('style', groups[index]);
+    });
+}
+
+function applyTranslationsUpdate() {
+    if (typeof exercisesData === 'undefined' || !exercisesData[currentExerciseId]) return;
+    closeWordTranslation();
+    renderPassage(currentExerciseId, passageElement);
+    rebuildQuestions();
+}
+
+window.addEventListener('translations-updated', () => {
+    // Foydalanuvchi javob yozayotgan bo'lsa, qayta chizmaymiz (kursor yo'qolmasligi uchun)
+    if (isTypingInAnswerField()) {
+        questionsElement.addEventListener('focusout', () => setTimeout(applyTranslationsUpdate, 0), { once: true });
+        return;
+    }
+    applyTranslationsUpdate();
 });
+
+/* ---------- Savollardagi so'zlar ---------- */
 
 function prepareQuestionTranslations(id, questionsEl) {
     const translations = getWordTranslations();
@@ -448,7 +479,7 @@ function prepareQuestionTranslations(id, questionsEl) {
                 wordEl.dataset.word = match[0];
                 wordEl.tabIndex = 0;
                 wordEl.setAttribute('role', 'button');
-                wordEl.setAttribute('aria-label', `${match[0]} tarjimasini belgilash`);
+                wordEl.setAttribute('aria-label', `${match[0]} tarjimasini yozish`);
 
                 const translation = translations[getWordTranslationKey(id, scope, wordIndex)];
                 if (translation) {
@@ -477,8 +508,6 @@ function prepareQuestionTranslations(id, questionsEl) {
 }
 
 function renderQuestionPhraseTranslations(id, questionsEl, translations = getWordTranslations()) {
-    questionsEl.querySelectorAll('.question-phrase-translation').forEach(annotation => annotation.remove());
-
     questionsEl.querySelectorAll('.question-item').forEach((questionEl, questionIndex) => {
         const scope = `q${questionIndex}`;
         const phrasePrefix = `${id}-${scope}-phrase-`;
@@ -491,27 +520,63 @@ function renderQuestionPhraseTranslations(id, questionsEl, translations = getWor
             .filter(phrase => Number.isInteger(phrase.start) && Number.isInteger(phrase.end) && phrase.end > phrase.start)
             .sort((first, second) => first.start - second.start);
 
+        let previousEnd = -1;
         phrases.forEach(phrase => {
-            const phraseWords = Array.from(questionEl.querySelectorAll('.clickable-word')).filter(wordEl => {
-                const index = Number(wordEl.dataset.wordIndex);
-                return wordEl.dataset.translationScope === scope && index >= phrase.start && index <= phrase.end;
-            });
-            const firstWord = phraseWords.find(wordEl => Number(wordEl.dataset.wordIndex) === phrase.start);
-            if (!firstWord) return;
+            if (phrase.start <= previousEnd) return;
 
-            const annotation = document.createElement('span');
-            annotation.className = 'word-translation question-phrase-translation';
-            annotation.dataset.phraseScope = scope;
-            annotation.dataset.phraseStart = phrase.start;
-            annotation.dataset.phraseEnd = phrase.end;
-            annotation.dataset.phraseText = phraseWords.map(wordEl => wordEl.dataset.word).join(' ');
-            annotation.tabIndex = 0;
-            annotation.setAttribute('role', 'button');
-            annotation.textContent = phrase.translation;
-            firstWord.insertBefore(annotation, firstWord.firstChild);
+            const wordEls = Array.from(questionEl.querySelectorAll('.clickable-word')).filter(wordEl => {
+                const index = Number(wordEl.dataset.wordIndex);
+                return index >= phrase.start && index <= phrase.end;
+            });
+            const firstWord = wordEls.find(wordEl => Number(wordEl.dataset.wordIndex) === phrase.start);
+            const lastWord = wordEls.find(wordEl => Number(wordEl.dataset.wordIndex) === phrase.end);
+            if (!firstWord || !lastWord) return;
+            previousEnd = phrase.end;
+
+            // Ibora ichidagi so'zlarning alohida tarjimasi ko'rinmaydi
+            wordEls.forEach(wordEl => {
+                wordEl.querySelectorAll(':scope > .word-translation').forEach(el => el.remove());
+            });
+
+            const setData = el => {
+                el.dataset.phraseScope = scope;
+                el.dataset.phraseStart = phrase.start;
+                el.dataset.phraseEnd = phrase.end;
+                el.dataset.phraseText = wordEls.map(wordEl => wordEl.dataset.word).join(' ');
+            };
+
+            const translationEl = document.createElement('span');
+            translationEl.className = 'word-translation phrase-translation';
+            translationEl.tabIndex = 0;
+            translationEl.setAttribute('role', 'button');
+            translationEl.textContent = phrase.translation;
+
+            if (firstWord.parentNode === lastWord.parentNode) {
+                const wrapper = document.createElement('span');
+                wrapper.className = 'translated-phrase';
+                setData(wrapper);
+                const wordsBox = document.createElement('span');
+                wordsBox.className = 'phrase-words';
+                wrapper.append(translationEl, wordsBox);
+                firstWord.parentNode.insertBefore(wrapper, firstWord);
+
+                let node = firstWord;
+                while (node) {
+                    const next = node.nextSibling;
+                    wordsBox.appendChild(node);
+                    if (node === lastWord) break;
+                    node = next;
+                }
+            } else {
+                // So'zlar turli teglar ichida bo'lsa: tarjima birinchi so'z ustiga qo'yiladi
+                setData(translationEl);
+                firstWord.insertBefore(translationEl, firstWord.firstChild);
+            }
         });
     });
 }
+
+/* ---------- Matnni (passage) chizish ---------- */
 
 function renderPassage(id, passageEl) {
     const words = exercisesData[id].passage1.split(/\s+/);
@@ -534,33 +599,43 @@ function renderPassage(id, passageEl) {
         }
     });
 
-    function renderWord(word, index) {
+    function splitBreaks(word) {
+        const breaks = word.match(/(?:<br\s*\/?>)+$/i)?.[0] || '';
+        return { content: breaks ? word.slice(0, -breaks.length) : word, breaks };
+    }
+
+    function renderWord(word, index, inPhrase) {
+        const { content, breaks } = splitBreaks(word);
+        const plainWord = content.replace(/<[^>]*>/g, '').trim();
         const key = getWordTranslationKey(id, 'p', index);
-        const plainWord = word.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, '').trim();
-        const translation = translations[key]
+        const translation = !inPhrase && translations[key]
             ? `<span class="word-translation">${escapeHtml(translations[key])}</span>`
             : '';
-        return `<span class="clickable-word" data-translation-scope="p" data-word-index="${index}" data-word="${escapeHtml(plainWord)}" tabindex="0" role="button" aria-label="${escapeHtml(plainWord)} tarjimasini belgilash">${translation}<span class="word-text">${word}</span></span>`;
+        return `<span class="clickable-word" data-translation-scope="p" data-word-index="${index}" data-word="${escapeHtml(plainWord)}" tabindex="0" role="button" aria-label="${escapeHtml(plainWord)} tarjimasini yozish">${translation}<span class="word-text">${content}</span></span>${inPhrase ? '' : breaks}`;
     }
 
     const renderedParts = [];
     for (let index = 0; index < words.length;) {
         const phrase = phraseByStart.get(index);
         if (!phrase) {
-            renderedParts.push(renderWord(words[index], index));
+            renderedParts.push(renderWord(words[index], index, false));
             index++;
             continue;
         }
 
         const phraseWords = [];
         for (let phraseIndex = phrase.start; phraseIndex <= phrase.end; phraseIndex++) {
-            phraseWords.push(renderWord(words[phraseIndex], phraseIndex));
+            phraseWords.push(renderWord(words[phraseIndex], phraseIndex, true));
         }
         const phraseText = words.slice(phrase.start, phrase.end + 1)
             .map(word => word.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, '').trim())
             .join(' ');
+        const trailingBreaks = splitBreaks(words[phrase.end]).breaks;
+
         renderedParts.push(
-            `<ruby class="translated-phrase" data-phrase-start="${phrase.start}" data-phrase-end="${phrase.end}" data-phrase-text="${escapeHtml(phraseText)}"><span class="phrase-words">${phraseWords.join(' ')}</span><rt class="word-translation" tabindex="0" role="button">${escapeHtml(phrase.translation)}</rt></ruby>`
+            `<span class="translated-phrase" data-phrase-scope="p" data-phrase-start="${phrase.start}" data-phrase-end="${phrase.end}" data-phrase-text="${escapeHtml(phraseText)}">` +
+            `<span class="word-translation phrase-translation" tabindex="0" role="button">${escapeHtml(phrase.translation)}</span>` +
+            `<span class="phrase-words">${phraseWords.join(' ')}</span></span>${trailingBreaks}`
         );
         index = phrase.end + 1;
     }
