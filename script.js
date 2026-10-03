@@ -1,6 +1,7 @@
 let currentExerciseId = 1;
 const translationsStorageKey = 'readingWordTranslations';
 const marksStorageKey = 'readingMarkedWords';
+const answersStorageKey = 'readingAnswers';
 
 function getWordTranslations() {
     try {
@@ -483,6 +484,85 @@ translationInput.addEventListener('keydown', event => {
     if (event.key === 'Escape') cancelEditor();
 });
 
+/* ---------- Javoblarni saqlash ---------- */
+
+let answersTimer = null;
+
+function getStoredAnswers() {
+    try {
+        return JSON.parse(localStorage.getItem(answersStorageKey) || '{}');
+    } catch (error) {
+        return {};
+    }
+}
+
+function collectAnswers() {
+    const radios = [];
+    questionsElement.querySelectorAll('input[type="radio"]').forEach((input, index) => {
+        if (input.checked) radios.push(index);
+    });
+    return {
+        t: Array.from(questionsElement.querySelectorAll('input[type="text"]')).map(input => input.value),
+        r: radios
+    };
+}
+
+function persistAnswers() {
+    clearTimeout(answersTimer);
+    answersTimer = null;
+    if (typeof exercisesData === 'undefined' || !exercisesData[currentExerciseId]) return;
+    if (!questionsElement.querySelector('input')) return;
+
+    const stored = getStoredAnswers();
+    const data = collectAnswers();
+    if (data.t.some(value => value.trim()) || data.r.length) stored[currentExerciseId] = data;
+    else delete stored[currentExerciseId];
+
+    try {
+        localStorage.setItem(answersStorageKey, JSON.stringify(stored));
+    } catch (error) {
+        console.error('Javoblarni saqlab bo‘lmadi:', error);
+    }
+    if (window.Cloud && window.Cloud.saveAnswers) window.Cloud.saveAnswers();
+}
+
+function scheduleAnswersSave() {
+    clearTimeout(answersTimer);
+    answersTimer = setTimeout(persistAnswers, 500);
+}
+
+function flushAnswers() {
+    if (answersTimer) persistAnswers();
+}
+
+function restoreAnswers(id) {
+    const data = getStoredAnswers()[id];
+    if (!data) return;
+    questionsElement.querySelectorAll('input[type="text"]').forEach((input, index) => {
+        if (typeof data.t[index] === 'string') input.value = data.t[index];
+    });
+    questionsElement.querySelectorAll('input[type="radio"]').forEach((input, index) => {
+        input.checked = (data.r || []).includes(index);
+    });
+}
+
+function deleteSavedAnswers(id) {
+    clearTimeout(answersTimer);
+    answersTimer = null;
+    const stored = getStoredAnswers();
+    delete stored[id];
+    try {
+        localStorage.setItem(answersStorageKey, JSON.stringify(stored));
+    } catch (error) {
+        console.error(error);
+    }
+    if (window.Cloud && window.Cloud.saveAnswers) window.Cloud.saveAnswers();
+}
+
+questionsElement.addEventListener('input', scheduleAnswersSave);
+questionsElement.addEventListener('change', scheduleAnswersSave);
+questionsElement.addEventListener('focusout', flushAnswers);
+
 /* ---------- Mashqni yuklash ---------- */
 
 window.onload = function () {
@@ -504,6 +584,7 @@ function markActiveExercise(id) {
 }
 
 function loadExercise(id) {
+    flushAnswers();
     stopQueue();
     closeWordTranslation();
     currentExerciseId = id;
@@ -519,6 +600,7 @@ function loadExercise(id) {
 
     questionsElement.innerHTML = ex.questions1 || '';
     prepareQuestionTranslations(id, questionsElement);
+    restoreAnswers(id);
 
     const resultBox = document.getElementById('result-box');
     if (resultBox) {
@@ -569,6 +651,7 @@ function checkAnswers() {
 }
 
 function resetExercise() {
+    deleteSavedAnswers(currentExerciseId);
     loadExercise(currentExerciseId);
 }
 
@@ -608,6 +691,7 @@ function applyTranslationsUpdate() {
     updateTranslationControls();
     renderPassage(currentExerciseId, passageElement);
     rebuildQuestions();
+    if (!answersTimer) restoreAnswers(currentExerciseId);
 }
 
 window.addEventListener('translations-updated', () => {

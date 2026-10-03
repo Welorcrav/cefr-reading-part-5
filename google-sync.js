@@ -4,6 +4,7 @@
     const storageKey = 'readingWordTranslations';
     const ownerKey = 'readingWordTranslationsOwner';
     const marksKey = 'readingMarkedWords';
+    const answersKey = 'readingAnswers';
 
     if (!config || typeof firebase === 'undefined') {
         bar.textContent = 'Google sinxronlashi yuklanmadi. Internet aloqasini tekshiring.';
@@ -34,6 +35,18 @@
         } catch (error) {
             return {};
         }
+    }
+
+    function readAnswers() {
+        try {
+            return JSON.parse(localStorage.getItem(answersKey) || '{}');
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function writeAnswers(answers) {
+        localStorage.setItem(answersKey, JSON.stringify(answers));
     }
 
     function writeMarks(marks) {
@@ -77,9 +90,11 @@
     }
 
     function clearLocalWork() {
-        const hadData = localStorage.getItem(storageKey) !== null || localStorage.getItem(marksKey) !== null;
+        const hadData = localStorage.getItem(storageKey) !== null || localStorage.getItem(marksKey) !== null ||
+            localStorage.getItem(answersKey) !== null;
         localStorage.removeItem(storageKey);
         localStorage.removeItem(marksKey);
+        localStorage.removeItem(answersKey);
         localStorage.removeItem(ownerKey);
         if (hadData) window.dispatchEvent(new Event('translations-updated'));
     }
@@ -101,8 +116,8 @@
     function saveToCloud() {
         if (!documentRef) return Promise.resolve();
         return documentRef.set(
-            { translations: readTranslations(), marks: readMarks() },
-            { mergeFields: ['translations', 'marks'] }
+            { translations: readTranslations(), marks: readMarks(), answers: readAnswers() },
+            { mergeFields: ['translations', 'marks', 'answers'] }
         );
     }
 
@@ -126,6 +141,7 @@
         const sameOwner = !savedOwner || savedOwner === user.uid;
         const local = sameOwner ? readTranslations() : {};
         const localMarks = sameOwner ? readMarks() : {};
+        const localAnswers = sameOwner ? readAnswers() : {};
         localStorage.setItem(ownerKey, user.uid);
         const currentUser = user;
         documentRef = database.collection('users').doc(user.uid);
@@ -139,12 +155,16 @@
             const merged = { ...local, ...remote };
             // Belgilar: bulutdagisi asos, bulutda hali yo'q bo'lsa — shu qurilmadagisi
             const mergedMarks = remoteMarks !== undefined ? remoteMarks : localMarks;
+            const remoteAnswers = remoteData.answers || {};
+            const mergedAnswers = { ...localAnswers, ...remoteAnswers };
             writeTranslations(merged);
             writeMarks(mergedMarks);
+            writeAnswers(mergedAnswers);
             window.dispatchEvent(new Event('translations-updated'));
 
             if (JSON.stringify(merged) !== JSON.stringify(remote) ||
-                JSON.stringify(mergedMarks) !== JSON.stringify(remoteMarks || {})) {
+                JSON.stringify(mergedMarks) !== JSON.stringify(remoteMarks || {}) ||
+                JSON.stringify(mergedAnswers) !== JSON.stringify(remoteAnswers)) {
                 await saveToCloud();
             }
 
@@ -154,10 +174,13 @@
                 const data = snapshotUpdate.exists ? snapshotUpdate.data() : {};
                 const latest = data.translations || {};
                 const latestMarks = data.marks || {};
+                const latestAnswers = data.answers || {};
                 if (JSON.stringify(latest) !== JSON.stringify(readTranslations()) ||
-                    JSON.stringify(latestMarks) !== JSON.stringify(readMarks())) {
+                    JSON.stringify(latestMarks) !== JSON.stringify(readMarks()) ||
+                    JSON.stringify(latestAnswers) !== JSON.stringify(readAnswers())) {
                     writeTranslations(latest);
                     writeMarks(latestMarks);
+                    writeAnswers(latestAnswers);
                     window.dispatchEvent(new Event('translations-updated'));
                 }
                 status = 'synced';
@@ -196,7 +219,8 @@
 
     window.Cloud = {
         saveTranslations: scheduleSave,
-        saveMarks: scheduleSave
+        saveMarks: scheduleSave,
+        saveAnswers: scheduleSave
     };
 
     auth.onAuthStateChanged(connectUser);
