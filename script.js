@@ -22,14 +22,20 @@ function escapeHtml(value) {
 let selectedTranslationTarget = null; // hozir tahrirlanayotgan so'z yoki ibora
 let selectedPhraseRange = null;       // sichqoncha bilan sudrab belgilangan ibora
 let clickedWordOnMouseDown = false;
+let markMode = false;                 // true: bosganda faqat belgilanadi
+const markedWords = new Map();        // kalit -> { scope, index }
+let markedQueue = [];
+let markedQueueIndex = 0;
 
 const translateSelectionButton = document.getElementById('translate-selection');
 const clearSelectionButton = document.getElementById('clear-selection');
 const passageElement = document.getElementById('exercise-passage');
 const questionsElement = document.getElementById('exercise-questions');
 const translationInput = document.getElementById('translation-input');
+const modeToggleButton = document.getElementById('mark-mode-toggle');
 
 const DEFAULT_HINT = "So'zni bosing. Ibora uchun sudrab belgilang";
+const MARK_HINT = "So'zlarni bosib belgilang";
 
 /* Javob yozilayotgan maydondagi kursorni buzmaslik uchun */
 function isTypingInAnswerField() {
@@ -75,21 +81,48 @@ function refreshHighlight() {
     const range = selectedPhraseRange || getTargetRange();
     document.querySelectorAll('.clickable-word').forEach(wordEl => {
         const index = Number(wordEl.dataset.wordIndex);
+        const scope = wordEl.dataset.translationScope;
         wordEl.classList.toggle(
             'is-selected',
-            !!range && wordEl.dataset.translationScope === range.scope &&
-                index >= range.start && index <= range.end
+            !!range && scope === range.scope && index >= range.start && index <= range.end
+        );
+        wordEl.classList.toggle(
+            'is-marked',
+            markedWords.has(getWordTranslationKey(currentExerciseId, scope, index))
         );
     });
 }
 
 function updateTranslationControls() {
+    const markedCount = markedWords.size;
     const hasPhrase = !!selectedPhraseRange;
-    translateSelectionButton.disabled = !hasPhrase;
-    translateSelectionButton.textContent = hasPhrase
-        ? `${selectedPhraseRange.end - selectedPhraseRange.start + 1} ta so'zli iborani tarjima qilish`
-        : DEFAULT_HINT;
-    if (clearSelectionButton) clearSelectionButton.disabled = !hasPhrase && !selectedTranslationTarget;
+    translateSelectionButton.disabled = markedCount === 0 && !hasPhrase;
+    translateSelectionButton.textContent = markedCount
+        ? `${markedCount} ta belgilangan so'zga tarjima yozish`
+        : hasPhrase
+            ? `${selectedPhraseRange.end - selectedPhraseRange.start + 1} ta so'zli iborani tarjima qilish`
+            : (markMode ? MARK_HINT : DEFAULT_HINT);
+    if (modeToggleButton) {
+    modeToggleButton.addEventListener('click', () => {
+        markMode = !markMode;
+        if (!markMode) {
+            markedWords.clear();
+            stopQueue();
+            if (selectedTranslationTarget && selectedTranslationTarget.queueLength) closeWordTranslation();
+            refreshHighlight();
+        }
+        updateTranslationControls();
+    });
+}
+
+if (clearSelectionButton) {
+        clearSelectionButton.disabled = markedCount === 0 && !hasPhrase && !selectedTranslationTarget;
+    }
+    if (modeToggleButton) {
+        modeToggleButton.textContent = markMode ? "Belgilash rejimi: yoqiq" : "Belgilash rejimi: o'chiq";
+        modeToggleButton.classList.toggle('btn-success', markMode);
+        modeToggleButton.classList.toggle('btn-secondary', !markMode);
+    }
 }
 
 function setSelectedPhraseRange(phraseRange) {
@@ -108,7 +141,8 @@ function clearPhraseSelection() {
 function openTranslationEditor(target) {
     selectedTranslationTarget = target;
     const translations = getWordTranslations();
-    document.getElementById('translation-label').textContent = `"${target.phraseText}" tarjimasi`;
+    const position = target.queueLength ? `${target.queuePosition}/${target.queueLength}: ` : '';
+    document.getElementById('translation-label').textContent = `${position}"${target.phraseText}" tarjimasi`;
     translationInput.value = translations[target.key] || '';
     document.getElementById('translation-editor').hidden = false;
     refreshHighlight();
@@ -117,7 +151,7 @@ function openTranslationEditor(target) {
     translationInput.select();
 }
 
-function openWordTranslation(wordEl) {
+function openWordTranslation(wordEl, queuePosition = 0, queueLength = 0) {
     const scope = wordEl.dataset.translationScope;
     const index = Number(wordEl.dataset.wordIndex);
     openTranslationEditor({
@@ -125,8 +159,66 @@ function openWordTranslation(wordEl) {
         key: getWordTranslationKey(currentExerciseId, scope, index),
         scope,
         index,
-        phraseText: wordEl.dataset.word
+        phraseText: wordEl.dataset.word,
+        queuePosition,
+        queueLength
     });
+}
+
+/* ---------- Belgilab, keyin ketma-ket yozish ---------- */
+
+function toggleWordMark(scope, index) {
+    const key = getWordTranslationKey(currentExerciseId, scope, index);
+    if (markedWords.has(key)) markedWords.delete(key);
+    else markedWords.set(key, { key, scope, index });
+    refreshHighlight();
+    updateTranslationControls();
+}
+
+function stopQueue() {
+    markedQueue = [];
+    markedQueueIndex = 0;
+}
+
+function clearAllMarks() {
+    markedWords.clear();
+    stopQueue();
+    if (selectedTranslationTarget) closeWordTranslation();
+    else clearPhraseSelection();
+    refreshHighlight();
+    updateTranslationControls();
+}
+
+function scopeRank(scope) {
+    return scope === 'p' ? -1 : Number(scope.slice(1));
+}
+
+function startMarkedQueue() {
+    markedQueue = Array.from(markedWords.values()).sort((a, b) =>
+        scopeRank(a.scope) - scopeRank(b.scope) || a.index - b.index);
+    markedQueueIndex = 0;
+    openNextInQueue();
+}
+
+function openNextInQueue() {
+    while (markedQueueIndex < markedQueue.length) {
+        const item = markedQueue[markedQueueIndex];
+        const wordEl = findWordEl(item.scope, item.index);
+        if (wordEl) {
+            openWordTranslation(wordEl, markedQueueIndex + 1, markedQueue.length);
+            return;
+        }
+        markedWords.delete(item.key);
+        markedQueueIndex++;
+    }
+    stopQueue();
+    refreshHighlight();
+    updateTranslationControls();
+}
+
+function cancelEditor() {
+    if (selectedTranslationTarget && selectedTranslationTarget.queueLength) stopQueue();
+    closeWordTranslation();
 }
 
 function openPhraseTranslation(scope, start, end, phraseText) {
@@ -201,6 +293,12 @@ function saveWordTranslation() {
     const scope = target.scope;
     closeWordTranslation();
     refreshScope(scope);
+
+    if (target.queueLength) {
+        markedWords.delete(target.key);
+        markedQueueIndex++;
+        openNextInQueue();
+    }
 }
 
 /* ---------- Matndan belgilangan iborani aniqlash ---------- */
@@ -252,7 +350,9 @@ trackWordSelection(questionsElement);
 
 translateSelectionButton.addEventListener('mousedown', event => event.preventDefault());
 translateSelectionButton.addEventListener('click', () => {
-    if (selectedPhraseRange) {
+    if (markedWords.size) {
+        startMarkedQueue();
+    } else if (selectedPhraseRange) {
         openPhraseTranslation(
             selectedPhraseRange.scope,
             selectedPhraseRange.start,
@@ -264,7 +364,7 @@ translateSelectionButton.addEventListener('click', () => {
 
 if (clearSelectionButton) {
     clearSelectionButton.addEventListener('mousedown', event => event.preventDefault());
-    clearSelectionButton.addEventListener('click', closeWordTranslation);
+    clearSelectionButton.addEventListener('click', clearAllMarks);
 }
 
 /* ---------- Bosish (click) ---------- */
@@ -299,6 +399,13 @@ document.addEventListener('click', event => {
     const index = Number(wordEl.dataset.wordIndex);
     const current = selectedTranslationTarget;
 
+    if (markMode) {
+        // Navbat bo'yicha yozish ketayotganda belgilarni o'zgartirmaymiz
+        if (current && current.queueLength) { translationInput.focus(); return; }
+        toggleWordMark(scope, index);
+        return;
+    }
+
     if (current && current.type === 'word' && current.scope === scope && current.index === index) {
         translationInput.focus();
         return;
@@ -326,10 +433,10 @@ document.addEventListener('keydown', event => {
 });
 
 document.getElementById('translation-save').addEventListener('click', saveWordTranslation);
-document.getElementById('translation-cancel').addEventListener('click', closeWordTranslation);
+document.getElementById('translation-cancel').addEventListener('click', cancelEditor);
 translationInput.addEventListener('keydown', event => {
     if (event.key === 'Enter') saveWordTranslation();
-    if (event.key === 'Escape') closeWordTranslation();
+    if (event.key === 'Escape') cancelEditor();
 });
 
 /* ---------- Mashqni yuklash ---------- */
@@ -342,6 +449,8 @@ window.onload = function () {
 };
 
 function loadExercise(id) {
+    markedWords.clear();
+    stopQueue();
     closeWordTranslation();
     currentExerciseId = id;
     const ex = exercisesData[id];
@@ -436,6 +545,7 @@ function rebuildQuestions() {
 
 function applyTranslationsUpdate() {
     if (typeof exercisesData === 'undefined' || !exercisesData[currentExerciseId]) return;
+    stopQueue();
     closeWordTranslation();
     renderPassage(currentExerciseId, passageElement);
     rebuildQuestions();
@@ -505,6 +615,7 @@ function prepareQuestionTranslations(id, questionsEl) {
         });
     });
     renderQuestionPhraseTranslations(id, questionsEl, translations);
+    refreshHighlight();
 }
 
 function renderQuestionPhraseTranslations(id, questionsEl, translations = getWordTranslations()) {
@@ -641,4 +752,5 @@ function renderPassage(id, passageEl) {
     }
 
     passageEl.innerHTML = renderedParts.join(' ');
+    refreshHighlight();
 }
